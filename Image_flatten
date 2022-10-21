@@ -1,0 +1,104 @@
+function BatchPlotProfile(input,imagename,roi_input,NAMEROI_list,channel_num,molecule,scale_val){
+	run("Clear Results"); 	
+	
+	if(File.exists(input+imagename)){
+		open(input + imagename);
+		name=getTitle;
+		run("Split Channels");
+		name1 = "C1-" + name;
+		name2 = "C2-" + name;
+		name3 = "C3-" + name;
+	}
+	data_folder = roi_input	+"/"+molecule;
+	for (k=0;k<NAMEROI_list.length;k++){
+		NAMEROI = NAMEROI_list[k];
+		print(File.exists(roi_input+NAMEROI));
+		roiManager("Open", roi_input+NAMEROI);
+	}
+	L = roiManager("count");
+	print("count = ",L);
+	File.makeDirectory(data_folder);
+	run("Clear Results"); 	
+	len = 0;
+	channel_name = name1;
+	if(channel_num == 2){
+		channel_name = name2;
+	} else if(channel_num == 3){
+		channel_name = name3;
+	}
+	print(channel_name);
+	for(j=0;j<L;j++){
+		
+		selectWindow(channel_name);
+		run("Set Scale...", "distance=1 known="+scale_val+" unit=um");
+		roiManager("Select", j); 
+		run("Measure");			
+		setOption("ShowRowNumbers", false); 
+		updateResults();
+	}
+	path = data_folder + "/measure.csv";
+	saveAs("Results", path);
+	for (k=0;k<L;k++){
+//		NAMEROI = NAMEROI_list[k];
+//		roi_file_name = split(NAMEROI,".");
+//		print(roi_file_name[0]);
+		run("Clear Results"); 	
+		selectWindow(channel_name);
+		run("Set Scale...", "distance=1 known=0.114 unit=um");
+//		roiManager("Select", roi_file_name[0]); 
+//		roiManager("Rename", k+1);
+		roiManager("Select", k);
+		roi_file_name = Roi.getName();
+		run("Plot Profile");
+		Plot.getValues(x, y);
+		for (i=0; i<x.length; i++) { 
+	         setResult("x", i, x[i]); 
+	         setResult("y", i, y[i]); 
+		} 
+		setOption("ShowRowNumbers", false); 
+		path = data_folder + "/"+roi_file_name+".csv";
+		saveAs("Results", path);
+		updateResults();
+		close();
+	}
+	selectWindow(name1);
+	close();
+	selectWindow(name2);
+	close();
+	selectWindow(name3);
+	close();  
+	selectWindow("ROI Manager");
+	run("Close");	
+	selectWindow("Results");
+	run("Close");
+	counter++;	
+}
+rootpath = "/Users/surbhitwagle/Desktop/Surbhit/Work/PhD/2020/PhD/MPIBR/PhD-Project/Experimental_collab/Ashley_Bourke/Data_for_Surbhit";
+sub_folder1 = "/GluA1_surface_staining";
+sub_folder2 = "/SypGFP-IRES-TeNT_inactivated_synapses";
+sub_folder3 = "Rois";
+counter = 0;
+molecule = "CellFill";
+channel_num = 1;
+scale_val = 0.114;
+input = rootpath+sub_folder1+sub_folder2+"/";
+//print(input)
+list = getFileList(input);
+Array.sort(list);
+//print(list.length)
+for (i = 0; i < list.length; i++){
+	temp_fname =  split(list[i],".");
+	if (temp_fname.length >= 2){
+		if(temp_fname[1] == "tif"){
+//			print(list[i]);
+			roi_input = input+sub_folder3+"/"+temp_fname[0]+"/Curated/";
+//			print(roi_input);
+			roi_list = newArray("RoiSet.zip");
+			BatchPlotProfile(input,list[i],roi_input,roi_list,channel_num,molecule,scale_val);
+		}
+	}
+	print("*****");
+
+}
+//print(counter)
+
