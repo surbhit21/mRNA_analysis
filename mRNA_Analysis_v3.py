@@ -84,7 +84,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
         MAP2_Sum_norm[width] = {}
         for mRNA in mRNA_to_analyse:
             
-            mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA)
+            # mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA)
              #  intializing dictionaries to store processed data length wise
             soma_data[width][mRNA],dend_data[width][mRNA],dend_data_meta[width][mRNA],soma_data_meta[width][mRNA] = {},{},{},{}
             soma_total_count[width][mRNA] ,soma_cell_count[width][mRNA] ,soma_unit_count[width][mRNA], soma_total_stat[width][mRNA], \
@@ -111,7 +111,8 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
             # MAP2_Sum_norm[width] = {}
             
             for lx in lengths:
-                Sum_norm_map2_folder = folder+"../MAP2-Figures/{0}/Sum_norm_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
+                Sum_norm_map2_folder = os.path.abspath(os.getcwd())+"/{0}/MAP2-Figures/{1}/Sum_norm_MAP2_{1}_{2}.npy".format(mRNA,int(float(width)),lx)#folder+"../MAP2-Figures/{0}/Sum_norm_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
+                
                 if not lx in  MAP2_Sum_norm[width].keys():
                     MAP2_Sum_norm[width][lx] = np.load(Sum_norm_map2_folder)
                 else:
@@ -121,6 +122,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
                 # MAP2_mean[width][mRNA][lx] = np.load(mean_map2_folder)
                 # MAP2_std[width][mRNA][lx] = np.load(std_map2_folder)
                 # MAP2_sem[width][mRNA][lx] = MAP2_std[width][mRNA][lx]/cell_num
+            breakpoint()
             for cell in cells:
                 if cell not in cells_to_exclude:
                     # print(cell)
@@ -653,13 +655,15 @@ if __name__ == '__main__':
     for width in widths_to_analyse:
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join(mRNA_to_analyse))
         pw.CreateFolderRecursive(op_folder)
+        # breakpoint()
         pw.PlotCellFraction(data_to_show[width],lab1,compartment,x_lab,y_lab,colors,title,op_folder+"soma_vs_dend_fractions_{0}_{1}".format(stats_list[stat_no],width)\
                         ,[],save_it = save_it,set_axis_label=ax_label)
         
    
     
     # only CaMKII fraction plot
-    colors_CAMKII = ["","#eb9c98","#e73745"]
+    """
+    colors_CAMKII = ["#118AB2","#e73745"]
     data_to_show_CaMKII = {}
     label_camkII = [channel_3_mRNA]
     compartment = ["Soma","Dendrite"]
@@ -672,12 +676,14 @@ if __name__ == '__main__':
     for width in widths_to_analyse:
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join([channel_3_mRNA]))
         pw.CreateFolderRecursive(op_folder)
+        
         pw.PlotCellFraction(data_to_show_CaMKII[width],label_camkII,compartment,x_lab,y_lab,colors_CAMKII,title,op_folder+"soma_vs_dend_fractions_only_{2}_{0}_{1}".format(stats_list[stat_no],width,channel_3_mRNA)\
-                        ,[],save_it = save_it,set_axis_label=ax_label)
-      # calculating the ratio of dendrite to soma mrna count 
+                        ,[],save_it = save_it,set_axis_label=0)
+    """
+    # calculating the ratio of dendrite to soma mrna count 
     dend_soma_ratio = GetCellWiseRatio(soma_cell_stat,dend_cell_stat)
     
-    
+    # breakpoint()
     # plotting varaible initializing
     x_lab,y_lab = ["mRNAs",'mRNA count ratio (Dendrite/Soma)']
     title = "Ratio between dendritic and somatic mRNA copy-number"
@@ -762,15 +768,15 @@ if __name__ == '__main__':
                     stds[1] = dend_sum_norm_distribution_dict[width][channel_3_mRNA][l1][:,:,stat_no].std(axis=0)[1:xs.shape[0]+1]
                     # breakpoint()
                     MAP2_norm_means = means/MAP2_mean[width][l1][1:xs.shape[0]+1]
-                    MAP2_norm_stds = ((stds/means + (MAP2_std[width][l1]/MAP2_mean[width][l1])[1:xs.shape[0]+1]) * MAP2_norm_means)
+                    MAP2_norm_stds = ((stds/means ) * MAP2_norm_means) #+ (MAP2_std[width][l1]/MAP2_mean[width][l1])[1:xs.shape[0]+1]
                     MAP2_norm_stds[0] = MAP2_norm_stds[0]/np.sqrt(dend_sum_norm_distribution_dict[width][mrna][l1][:,:,stat_no].shape[0])
                     MAP2_norm_stds[1] = MAP2_norm_stds[1]/np.sqrt(dend_sum_norm_distribution_dict[width][channel_3_mRNA][l1][:,:,stat_no].shape[0])
                     # MAP2_norm_means[cdx] = MAP2_norm_means[cdx]/MAP2_norm_means[cdx,0]
                     
                     norm_density_mean = (MAP2_norm_means.T/MAP2_norm_means[:,0]).T
                     # breakpoint()
-                    norm_density_std[0] = ((MAP2_norm_stds[0]/MAP2_norm_means[0] + MAP2_norm_stds[0,0]/MAP2_norm_means[0,0]) * norm_density_mean[0])#/np.sqrt(dend_sum_norm_distribution_dict[width][mrna][l][:,:,stat_no].shape[0])
-                    norm_density_std[1] = ((MAP2_norm_stds[1]/MAP2_norm_means[1] + MAP2_norm_stds[1,0]/MAP2_norm_means[1,0]) * norm_density_mean[1])#/np.sqrt(dend_sum_norm_distribution_dict[width][channel_3_mRNA][l][:,:,stat_no].shape[0])
+                    norm_density_std[0] = ((MAP2_norm_stds[0]/MAP2_norm_means[0]) * norm_density_mean[0])# + MAP2_norm_stds[0,0]/MAP2_norm_means[0,0]/np.sqrt(dend_sum_norm_distribution_dict[width][mrna][l][:,:,stat_no].shape[0])
+                    norm_density_std[1] = ((MAP2_norm_stds[1]/MAP2_norm_means[1]) * norm_density_mean[1])# + MAP2_norm_stds[1,0]/MAP2_norm_means[1,0]/np.sqrt(dend_sum_norm_distribution_dict[width][channel_3_mRNA][l][:,:,stat_no].shape[0])
                     # norm_density_std[0] = 2*MAP2_norm_stds[0]/MAP2_norm_means[0]
                     # norm_density_std[1:] = (MAP2_norm_stds[1:]/MAP2_norm_means[1:]+MAP2_norm_stds[0]/MAP2_norm_means[0])*norm_density_mean[1:]
                     # np.nan_to_num(norm_density_std
@@ -791,5 +797,10 @@ if __name__ == '__main__':
                 # breakpoint()
                 pw.PlotBinnedStats(np.asarray([xs,xs]), norm_density_mean, norm_density_std, norm_density_mean, labs, x_lab, y_lab, y_lab_norm, plot_colors,title, op_folder+file_prefix+"_norm__with_fit_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                                     , bin_size,save_it = save_it,fit_exp=1,in_set=0,set_axis_label=ax_label)
+                # breakpoint()
+                # op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join([channel_3_mRNA]))
+                # pw.CreateFolderRecursive(op_folder)
+                # pw.PlotBinnedStats1p(np.asarray([xs]), np.asarray([norm_density_mean[1]]), np.asarray([norm_density_std[1]]), norm_density_mean[1], [r'CaMKII$\alpha$'], x_lab, y_lab, y_lab_norm, plot_colors,title, op_folder+file_prefix+"_norm__with_fit_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],channel_3_mRNA,width,l1)\
+                #                     , bin_size,save_it = 1,fit_exp=1,in_set=0,set_axis_label=0)
                         
         

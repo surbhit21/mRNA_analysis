@@ -28,7 +28,7 @@ import MAP2_Analysis as mp2a
 # from scipy import stats
 
 # The type of mRNA to analyse, possbile choices: "Gria1", "Gria2", "CNIH2", "All"
-mRNA = "Gria2"
+mRNA = "Gria1"
 # number of cells for each mRNA 
 num_cells = {"CNIH2":28,"Gria1":19,"Gria2":15}
 

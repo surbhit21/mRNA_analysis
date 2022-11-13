@@ -20,7 +20,7 @@ from scipy.optimize import curve_fit
 from scipy.stats import ks_2samp, kruskal,ttest_ind
 import seaborn as sns
 import scikit_posthocs as sp
-
+from Fonkeu_et_al_2019 import GetmRNADist
 """
 Parent class for All plotting stuff
 """
@@ -105,6 +105,7 @@ class SNSPlottingWidget():
             ax2 = fig.add_axes([left, bottom, width, height])
             ax2.set_ylabel(ylab_norm)
         if xs.shape[0] == means.shape[0]:
+            # breakpoint()
             for i in range(xs.shape[0]):
                ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' )
                
@@ -135,8 +136,94 @@ class SNSPlottingWidget():
                 plt.close()
         else:
             print("Not same number of xs and means",xs.shape,means.shape)
-            
     
+    def PlotBinnedStats1p(self,xs,means,stds,MAP2_norm,labs,xlab,ylab,ylab_norm,color,title_string,file_name,bin_size,save_it = 1,fit_exp =1,auto_close=1,in_set=1,lw=3.0,set_axis_label=1,exp_method = "NormE"):
+        """
+            function to plot binned statistics
+            
+        """
+        fig, ax = plt.subplots()
+        # ax.plot(xs[0],np.zeros(xs[0].shape),'k--',label='=0' ,markersize=4*lw)
+        if in_set ==1:
+            left, bottom, width, height = [0.35, 0.7, 0.2, 0.2]
+            ax2 = fig.add_axes([left, bottom, width, height])
+            ax2.set_ylabel(ylab_norm)
+        if xs.shape[0] == means.shape[0]:
+            # breakpoint()
+            for i in range(xs.shape[0]):
+               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' )
+               
+               if in_set==1:
+                   ax2.plot(xs[i],MAP2_norm[i],color=color[i],marker='o',markersize=4,linestyle='dashed')
+            if set_axis_label == 1:
+                ax.set_xlabel(xlab)
+                ax.set_ylabel(ylab)
+            
+            folder = "."
+            
+            if fit_exp == 1:
+                for i in range(xs.shape[0]):
+                    # breakpoint()
+                    yi_fit, ri_squared,chi_squ = ExpFit(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
+                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+"-fit")
+                    fonkey_fit_y = GetmRNADist(xs[i],0.0018,0.0018)
+                    fonkey_fit_y1 = GetmRNADist(xs[i],0.0008,0.0018)
+                    fonkey_fit_y2 = GetmRNADist(xs[i],0.0028,0.0018)
+                    # 0.0008,0.0028
+                    ax.plot(xs[i],fonkey_fit_y,marker='None',c='k',label="Fonkeu et al. (2019)")
+                    ax.plot(xs[i],fonkey_fit_y1,'k--')
+                    ax.plot(xs[i],fonkey_fit_y2,'k--')
+            # plt.show()
+            fig.tight_layout()
+            ax.legend()
+            if save_it == 1: 
+                self.SaveFigures(file_name)
+                print("saved figures to: {%s/%s}" %(folder, file_name))
+            else:
+                print("Plots not saved")
+            plt.show()
+            if auto_close == 1:
+                plt.close()
+        else:
+            print("Not same number of xs and means",xs.shape,means.shape)
+            
+            
+    def PlotMAP2(self,xs,means,stds,labs,xlab,ylab,title_string,file_name,bin_size,width=10,height=8,fsize=16,save_it = 1,fit_exp =1,auto_close=1):
+        fig, ax = plt.subplots(figsize=(width, height))
+        # plt.rc('font', **{'family':'serif','serif':['Palatino']})
+        # plt.rc('text', usetex=True)
+        # ax.scatter(x_data1,y_data1,label=lab1)
+        # ax.scatter(x_data2,y_data2,label=lab2)
+        ax.plot(xs[0],np.zeros(xs[0].shape),'k--',label='=0')
+        if xs.shape[0] == means.shape[0]:
+            for i in range(xs.shape[0]):
+               ax.errorbar(xs[i]+bin_size/2,means[i],stds[i],label=labs[i],color='k',marker='o')
+            ax.set_xlabel(xlab,fontsize=fsize)
+            ax.set_ylabel(ylab,fontsize=fsize)
+            plt.title(title_string,fontsize=fsize)
+            
+            folder = "."
+            
+            if fit_exp == 1:
+                for i in range(xs.shape[0]):
+                    yi_fit, ri_squared = ExpFit(xs[i],means[i],1,-1)
+                    ax.plot(xs[i]+bin_size/2,yi_fit,'^--',c=COLORS[i],label=labs[i]+"-fit, $r^2$ =%0.2f" %(ri_squared))
+            plt.legend(prop={'size': fsize})
+            # plt.show()
+            fig.tight_layout()
+            if save_it == 1: 
+                plt.savefig(file_name+".png",dpi=150)
+                plt.savefig(file_name+".svg",dpi=150)
+                plt.savefig(file_name+".pdf",dpi=150)
+                print("saved figures to: {%s/%s}" %(folder, file_name))
+            else:
+                print("Plots not saved")
+            plt.show()
+            if auto_close == 1:
+                plt.close()
+        else:
+            print("Not same number of xs and means")
+
     def PlotFittedCurves(self,xs,data1,data2,labs,xlab,ylab,ylab_norm,color,title_string,file_name,bin_size,save_it = 1,lw=3.0,set_axis_label=1,exp_method = "NormE"):
         """
             function to plot binned statistics
@@ -188,7 +275,7 @@ class SNSPlottingWidget():
             print("Not same length of xs and means",xs.shape,data.shape)
     def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1):
         fig, ax = plt.subplots()
-        # breakpoint()
+        breakpoint()
         num_plots = int(fractions.shape[0]/groups)
         pos = np.linspace(1,2,groups)
         # breakpoint()
@@ -197,35 +284,22 @@ class SNSPlottingWidget():
         x_tics = []
 
         for i in range(num_plots):
-            # breakpoint()
-            print(i)
-            bp1 = ax.boxplot(fractions[groups*i],widths = 0.5,positions=[i*(groups+1)+pos[0]],showfliers=False)
-            bp2 = ax.boxplot(fractions[groups*i+groups-1],widths = 0.5,positions=[i*(groups+1)+pos[1]],showfliers=False)
+            bp1 = ax.boxplot(fractions[groups*i],widths = 0.5,positions=[i*(groups+1)+pos[0]],showfliers=False,labels=[compartment[0]])
+            bp2 = ax.boxplot(fractions[groups*i+groups-1],widths = 0.5,positions=[i*(groups+1)+pos[1]],showfliers=False,labels=[compartment[1]])
             x_points.append(i*(groups+1)+pos)
             x_points.append([i*(groups+1)+pos[1],(num_plots-1)*(groups+1)+pos[1]])
             x_tics.append(i*(groups+1)+pos.mean())
             pairs.append([i*groups+1,i*groups+2])
             pairs.append([i*groups+2,(num_plots-1)*groups+2])
-            # means = []
-            # stds = []
-            # for k in range(groups):
-            #     means.append(fractions[groups*i+k-1].mean())
-            #     stds.append(fractions[groups*i+k-1].std())
-            # # sp = sns.swarmplot(y=fractions[2*i:2*i+2],x=i*2+pos)
-            # for j, line in enumerate(bp['means']):
-            #     x, y = line.get_xydata()[1]
-            #     text = r'${:.2f}(\pm {:.2f})$'.format(means[j], stds[j])
-            #     ax.annotate(text, xy=(x, y))
-            self.setBoxColors(bp1,color[1])
-            self.setBoxColors(bp2,color[2])
-        # breakpoint()
-        plt.plot([], c=color[1], label=compartment[0])
-        plt.plot([], c=color[2], label=compartment[1])
+            self.setBoxColors(bp1,color[0],1)
+            self.setBoxColors(bp2,color[1],1)
+        
+        plt.plot([], c=color[0], label=compartment[0])
+        plt.plot([], c=color[1], label=compartment[1])
         plt.xticks(x_tics, lab)
         if fractions.shape[0]>2:
             p_values = sp.posthoc_dunn(fractions, p_adjust = 'bonferroni')
         else:
-            # breakpoint()
             p_val = ttest_ind(fractions[0],fractions[1]).pvalue
             max_ind = np.asarray(pairs).max()
             p_values = np.ones((max_ind+1,max_ind+1))*p_val
@@ -251,28 +325,7 @@ class SNSPlottingWidget():
             ax.set_xlabel(xlab)
             ax.set_ylabel(ylab)
         # plt.ylim([0,1.3])
-        plt.title(title_string)
-        # plt.tick_params(
-        #     axis='x',          # changes apply to the x-axis
-        #     which='both',      # both major and minor ticks are affected
-        #     bottom=False,      # ticks along the bottom edge are off
-        #     top=False,         # ticks along the top edge are off
-        #     labelbottom=False) # labels along the bottom edge are off
-        # means = []
-        # stds = []
-        # num_means =fractions.shape[0]
-        # for i in range(num_means):
-        #     means.append(fractions[i].mean())
-        #     stds.append(fractions[i].std())
-        # # breakpoint()
-        # for j, line in enumerate(bp['means']):
-        #     x, y = line.get_xydata()[1]
-        #     text = r'${:.2f}(\pm {:.2f})$'.format(means[j], stds[j])
-        #     ax.annotate(text, xy=(x, y))
-        # # for j, line in enumerate(bp2['means']):
-        # #     x, y = line.get_xydata()[1]
-        # #     text = r' ${:.2f}(\pm {:.2f})$'.format(means[2+j], stds[2+j])
-        # #     ax.annotate(text, xy=(x, y))
+            plt.title(title_string)
         fig.tight_layout()
         folder = "."
         if save_it == 1:
@@ -343,16 +396,16 @@ class SNSPlottingWidget():
             plt.plot([x1,x1, x2,x2], [y+fac, y+h+fac, y+h+fac, y+fac], lw=1.5, c=color)
             plt.text((x1+ x2)*0.5,y+h+fac,txt, ha=ha, va=va, color=color)
         
-    def setBoxColors(self,bp,c):
-        setp(bp['boxes'], color=c)
-        setp(bp['caps'], color=c )
-        setp(bp['caps'], color=c )
-        setp(bp['whiskers'], color=c )
-        setp(bp['whiskers'], color=c )
-        setp(bp['fliers'], color=c )
-        setp(bp['fliers'], color=c )
-        setp(bp['medians'], color=c )
-        # setp(bp['mean'], color=c )
+    def setBoxColors(self,bp,c,a=1):
+        setp(bp['boxes'], color=c,alpha=a)
+        setp(bp['caps'], color=c,alpha=a )
+        setp(bp['caps'], color=c ,alpha=a)
+        setp(bp['whiskers'], color=c ,alpha=a)
+        setp(bp['whiskers'], color=c ,alpha=a)
+        setp(bp['fliers'], color=c ,alpha=a)
+        setp(bp['fliers'], color=c ,alpha=a)
+        setp(bp['medians'], color=c,alpha=a )
+        # setp(bp['mean'], color=c ,alpha=0.8)
 
 def adjacent_values(vals, q1, q3):
     upper_adjacent_value = q3 + (q3 - q1) * 1.5
@@ -397,7 +450,7 @@ def ExpFit(ftype,xdata,ydata,sigmas,Fidx,Lidx,molecule):
     ss_tot = np.sum((ydata[Fidx:]-np.mean(ydata[Fidx:]))**2)
     r_squared = 1 - (ss_res / ss_tot)
     chi_squ = ChiSq( ydata[Fidx:], y_fit[Fidx:],sigmas[Fidx:])
-    print(chi_squ)
+    print("chi-squared = ",chi_squ)
     return y_fit,r_squared,chi_squ
 
 def ChiSq(yd,y_fit,sigmas):
