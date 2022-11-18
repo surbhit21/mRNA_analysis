@@ -54,39 +54,66 @@ Every project is different, so consider which of these sections apply to yours. 
 ## Name
 Choose a self-explaining name for your project.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+# Project
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+This project contains the scripts used to analyse mRNA localization and generate figures for the paper Wagle et al. 
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Pre-requisite
 
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install following packages.
+
+```bash
+asteval==0.9.28
+contourpy==1.0.6
+cycler==0.11.0
+fonttools==4.38.0
+future==0.18.2
+kiwisolver==1.4.4
+lmfit==1.0.3
+matplotlib==3.6.2
+numpy==1.23.4
+packaging==21.3
+pandas==1.5.1
+patsy==0.5.3
+Pillow==9.3.0
+pyparsing==3.0.9
+python-dateutil==2.8.2
+pytz==2022.6
+scikit-posthocs==0.7.0
+scipy==1.9.3
+seaborn==0.12.1
+six==1.16.0
+statsmodels==0.13.5
+uncertainties==3.1.7
+```
+To install the above-listed packages, run: 
+```bash
+pip install -r requirment.txt 
+```
+Or you can choose to install them separately
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+```python
+python mRNA_Analysis_v3.py -m list of mRNAs -w list of widths
+```
 
 ## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhitwagle/home)
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+## Support
+This work is supported by the [CRC 1080](https://www.crc1080.com) funded by DFG .
+
 
 ## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+We acknowledge our collaborators and members of [Tchumatchenko Lab](http://tchumatchenko.de)
 
 ## License
 For open source projects, say how it is licensed.
 
 ## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+We are curretly still working on updating the scripts for small changes in the plots and any new analysis that might come up.
