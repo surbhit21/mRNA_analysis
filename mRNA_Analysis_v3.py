@@ -44,10 +44,10 @@ soma_data = {}
 dend_data_meta = {}
 soma_data_meta = {}
 
-mRNA_COLOR_code = {"Gria1":'#EF476F',"Gria2":'#FFD166',"CNIH2":'#06D6A0',"CAMKII":'#118AB2'}
+mRNA_COLOR_code = {"Gria1":'#606C38',"Gria2":'#283618',"CNIH2":'#DDA15E',"CAMKII":'#BC6C25'}
 
 # possbile lengths for dendritic distributions
-Lengths = np.asarray([2,25,50,100,125,150,200,250])
+Lengths = np.asarray([2,25,50,100,125,200,250])
 
 #  dendritic widths analysis
 widths = [5.0,10,15.0]
@@ -84,7 +84,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
         MAP2_Sum_norm[width] = {}
         for mRNA in mRNA_to_analyse:
             
-            # mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA)
+            mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA,lengths)
              #  intializing dictionaries to store processed data length wise
             soma_data[width][mRNA],dend_data[width][mRNA],dend_data_meta[width][mRNA],soma_data_meta[width][mRNA] = {},{},{},{}
             soma_total_count[width][mRNA] ,soma_cell_count[width][mRNA] ,soma_unit_count[width][mRNA], soma_total_stat[width][mRNA], \
@@ -117,12 +117,15 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
                     MAP2_Sum_norm[width][lx] = np.load(Sum_norm_map2_folder)
                 else:
                     # breakpoint()
-                    MAP2_Sum_norm[width][lx] = np.concatenate((MAP2_Sum_norm[width][lx],np.load(Sum_norm_map2_folder)),axis=0)
+                    try:
+                        MAP2_Sum_norm[width][lx] = np.concatenate((MAP2_Sum_norm[width][lx],np.load(Sum_norm_map2_folder)),axis=0)
+                    except:
+                        print("error in concatinating ",mRNA)
                 # std_map2_folder = folder+"../MAP2-Figures/{0}/std_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
                 # MAP2_mean[width][mRNA][lx] = np.load(mean_map2_folder)
                 # MAP2_std[width][mRNA][lx] = np.load(std_map2_folder)
                 # MAP2_sem[width][mRNA][lx] = MAP2_std[width][mRNA][lx]/cell_num
-            breakpoint()
+            # breakpoint()
             for cell in cells:
                 if cell not in cells_to_exclude:
                     # print(cell)
@@ -584,7 +587,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', "--mRNA", nargs="+", default = ["Gria2"],
                         help='mRNA names to analyse works for Gria1, Gria2, CNIH2 or any combination, if all is given all four will be plotted togather. Comparison \
                             is always made against CMAKII mRNA')
-    parser.add_argument('-w', "--width", nargs="+", default = ['5.0'],
+    parser.add_argument('-w', "--width", nargs="+", default = ['10'],
                         help='dendritic width, allowed values: 5.0, 10, 15.0 or any combination')
     
     # reading the argumenst
@@ -616,7 +619,7 @@ if __name__ == '__main__':
     
     
     # dend_cell_sum = {}
-
+    
         
     #  pltotting class and setting
     pw = PlottingWidgetmRNA()
@@ -628,7 +631,7 @@ if __name__ == '__main__':
     #  calculating fractions for total in soma and dendrites
     fractions, total_cell_counts = GetSomaticDendriticFraction(soma_cell_stat,dend_cell_stat)
     data_to_show = {}
-    
+    # breakpoint()
     #  statistics number to use as representation of mRNA copy-number
     
     stats_list = ["area","area X mu","area X med","mean","med","Puncta Count"]
@@ -641,6 +644,7 @@ if __name__ == '__main__':
     x_lab,y_lab = ["mRNA","Fraction of mRNA in Soma Vs. dendrites"]
     title = "Quatification of Dendritic and Somatic mRNA copy-number";
     
+    breakpoint()
     # setting up the data,labels, colors to plot in the correct format
     for width in fractions.keys():
         data_to_show[width] = []
@@ -734,6 +738,7 @@ if __name__ == '__main__':
     MAP2_norm_means = {}
     MAP2_nrom_stds = {}
     MAP2_norm_sems = {}
+    breakpoint()
     
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
@@ -789,9 +794,9 @@ if __name__ == '__main__':
                 MAP2_norm_data_camKII = MAP2_norm_data_camKII[~np.isinf(MAP2_norm_data_camKII).any(axis=1)]
                 MAP2_norm_data = MAP2_norm_data[~np.isinf(MAP2_norm_data).any(axis=1)]
                 # breakpoint()
-                pw.PlotFittedCurves(xs, MAP2_norm_data, MAP2_norm_data_camKII, labs, x_lab, y_lab, y_lab_norm,plot_colors,title+"_curve_fit", op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
-                                  ,bin_size,save_it = save_it,set_axis_label=ax_label,exp_method="NormE")
-                #
+                # pw.PlotFittedCurves(xs, MAP2_norm_data, MAP2_norm_data_camKII, labs, x_lab, y_lab, y_lab_norm,plot_colors,title+"_curve_fit", op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
+                #                   ,bin_size,save_it = save_it,set_axis_label=ax_label,exp_method="NormE")
+                # #
                 pw.PlotBinnedStats(np.asarray([xs,xs]), MAP2_norm_means, MAP2_norm_stds,norm_density_mean, labs, x_lab, y_lab, y_lab_norm,plot_colors,title, op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                                   ,bin_size,save_it = save_it,fit_exp=1,in_set=in_set,set_axis_label=ax_label,exp_method="1E")
                 # breakpoint()

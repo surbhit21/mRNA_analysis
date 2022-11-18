@@ -20,7 +20,7 @@ from scipy.optimize import curve_fit
 from scipy.stats import ks_2samp, kruskal
 from SNSPlottingWidget import SNSPlottingWidget
 
-Lengths = np.array([2,25,50,75,100,125,150,200])
+# Lengths = np.array([2,25,50,75,100,125,150,200])
 CB91_Blue = '#2CBDFE'
 CB91_Green = '#47DBCD'
 CB91_Pink = '#F3A0F2'
@@ -33,7 +33,7 @@ COLORS = [CB91_Blue,CB91_Green,CB91_Pink,CB91_Purple,CB91_Violet,CB91_Amber]
 # bins = np.arange(0, Lengths.max(), bin_size)
 # print(bins)
 
-def LoadData(fpath,cells_to_exclude,molecule,width,num_cells,bins):
+def LoadData(fpath,cells_to_exclude,molecule,width,num_cells,bins,Lengths):
     len_arr = np.zeros(Lengths.shape)
     data_dict = {}
     binned_data_dict = {}
@@ -56,7 +56,7 @@ def LoadData(fpath,cells_to_exclude,molecule,width,num_cells,bins):
                     # print(fn)
                     data_dict["cell_{}".format(i)][fn.split(".")[0]] = ReadCSVFull(data_folder+fn)
                     length_dict["cell_{}".format(i)][fn.split(".")[0]]  = data_dict["cell_{}".format(i)][fn.split(".")[0]][-1,0]
-                    len_arr = LenCount(len_arr,length_dict["cell_{}".format(i)][fn.split(".")[0]],"cell_{}_".format(i)+fn.split(".")[0] )
+                    len_arr = LenCount(len_arr,length_dict["cell_{}".format(i)][fn.split(".")[0]],Lengths ,"cell_{}_".format(i)+fn.split(".")[0])
                     binned_data_dict["cell_{}".format(i)][fn.split(".")[0]] = BinnedSum(data_dict["cell_{}".format(i)][fn.split(".")[0]],bins,0,"cell_{}_".format(i)+fn.split(".")[0])[:,1]
                     for le in Lengths:
                         if length_dict["cell_{}".format(i)][fn.split(".")[0]]  >= le:
@@ -64,16 +64,17 @@ def LoadData(fpath,cells_to_exclude,molecule,width,num_cells,bins):
                             # print("appending data from cell_{} dendrite {}  {}".format(i,fn.split(".")[0],le))
                             data_length_wise[le].append(data_dict["cell_{}".format(i)][fn.split(".")[0]])
                             binned_data_length_wise[le].append(binned_data_dict["cell_{}".format(i)][fn.split(".")[0]] )
+    # breakpoint()
     for lex in Lengths:
         binned_data_length_wise[lex] = np.asarray(binned_data_length_wise[lex])
         data_length_wise[lex] = np.asarray(binned_data_length_wise[lex])
         
-    breakpoint()
+   
     return data_dict,binned_data_dict,data_length_wise,binned_data_length_wise,length_dict,len_arr
 
 def BinnedSum(arr,bins,num_col=-1,name= None):
     # print(name)
-    return arr
+    # return arr
     if len(arr.shape) == 2:
         rr,cc = arr.shape
         binned_sum = np.zeros((len(bins),cc))
@@ -89,14 +90,14 @@ def BinnedSum(arr,bins,num_col=-1,name= None):
         print("quite not the shape",arr.shape)
         return np.zeros((len(bins),arr.shape[1]))
 
-def LenCount(len_arr,length,name=None):
+def LenCount(len_arr,length,Lengths,name=None):
     len_arr += (length >= Lengths).astype(int)
     if length > 150:
         print("{} {}".format(name,length))
     return len_arr
 
 def GetSumNormDistribution(data):
-    breakpoint()
+    # breakpoint()
     sums = data.sum(axis=1)
     norm_data = np.transpose(data)/sums
     return np.transpose(norm_data)
@@ -159,13 +160,13 @@ def GetSlidingWindowMeanMatrix(data,window_len,mode='same'):
     return op_matrix
 
 # if __name__ == '__main__':
-def plotAndSaveMap2( num_cells_dict,Excluded_cells,bins,bin_size,width,mRNA,showplot=1):
+def plotAndSaveMap2( num_cells_dict,Excluded_cells,bins,bin_size,width,mRNA,Lengths,showplot=0):
     # # mRNA = "CNIH2"
     # num_cells_dict = {"CNIH2":28,"Gria1":19,"Gria2":15}
     # Excluded_cells= {"CNIH2":[],"Gria1":[],"Gria2":[3,9,10]}
     # # width = 5
-    breakpoint()
-    map2_5_data,binned_data_dict,data_length_wise,binned_data_length_wise,length_data,length_arr = LoadData(mRNA+"/cells/",Excluded_cells[mRNA],"MAP2",width,num_cells_dict[mRNA],bins)
+    # breakpoint()
+    map2_5_data,binned_data_dict,data_length_wise,binned_data_length_wise,length_data,length_arr = LoadData(mRNA+"/cells/",Excluded_cells[mRNA],"MAP2",width,num_cells_dict[mRNA],bins,Lengths)
     # breakpoint()
     sum_norm_MAP2 = {}
     mean_sum_norm_MAP2 = {}
@@ -189,14 +190,14 @@ def plotAndSaveMap2( num_cells_dict,Excluded_cells,bins,bin_size,width,mRNA,show
             pwmrna.PlotMAP2(np.asarray([x]), np.asarray([mean_sum_norm_MAP2[l][1:x.shape[0]+1]]), np.asarray([sem_sum_norm_MAP2[l][1:x.shape[0]+1]]), ["MAP2"], "Dendritic Distance", " Fluorescence intensity (a.b.u)", "N={}".format(binned_data_length_wise[l].shape[0]), "{}/Sum_norm_MAP_length_{}_width{}".format(folder,l,width), bin_size,fit_exp=0)
             
             
-def sliding_window_analysis():
+def sliding_window_analysis(Lengths):
     bin_size = 5
     bins = np.arange(0,200,bin_size)
     mRNA = "Gria1"
     num_cells_dict = {"CNIH2":28,"Gria1":19,"Gria2":15}
     Excluded_cells= {"CNIH2":[],"Gria1":[],"Gria2":[3,9,10]}
     width = 5#
-    map2_5_data,binned_data_dict,data_length_wise,binned_data_length_wise,length_data,length_arr = LoadData(mRNA+"/cells/",Excluded_cells[mRNA],"MAP2",width,num_cells_dict[mRNA],bins)
+    map2_5_data,binned_data_dict,data_length_wise,binned_data_length_wise,length_data,length_arr = LoadData(mRNA+"/cells/",Excluded_cells[mRNA],"MAP2",width,num_cells_dict[mRNA],bins,Lengths)
     # breakpoint()
     for l1 in Lengths[4:5]:
         x1 = np.arange(0,l1,bin_size)

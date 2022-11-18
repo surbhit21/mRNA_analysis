@@ -120,8 +120,9 @@ class SNSPlottingWidget():
             if fit_exp == 1:
                 for i in range(xs.shape[0]):
                     # breakpoint()
-                    yi_fit, ri_squared,chi_squ = ExpFit(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
-                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+"-fit")
+                    yi_fit,chi_squ = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
+                    # breakpoint()
+                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
             
             # plt.show()
             fig.tight_layout()
@@ -151,7 +152,7 @@ class SNSPlottingWidget():
         if xs.shape[0] == means.shape[0]:
             # breakpoint()
             for i in range(xs.shape[0]):
-               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' )
+               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='dashed' )
                
                if in_set==1:
                    ax2.plot(xs[i],MAP2_norm[i],color=color[i],marker='o',markersize=4,linestyle='dashed')
@@ -164,7 +165,7 @@ class SNSPlottingWidget():
             if fit_exp == 1:
                 for i in range(xs.shape[0]):
                     # breakpoint()
-                    yi_fit, ri_squared,chi_squ = ExpFit(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
+                    yi_fit, ri_squared,chi_squ = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
                     ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+"-fit")
                     fonkey_fit_y = GetmRNADist(xs[i],0.0018,0.0018)
                     fonkey_fit_y1 = GetmRNADist(xs[i],0.0008,0.0018)
@@ -275,7 +276,6 @@ class SNSPlottingWidget():
             print("Not same length of xs and means",xs.shape,data.shape)
     def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1):
         fig, ax = plt.subplots()
-        breakpoint()
         num_plots = int(fractions.shape[0]/groups)
         pos = np.linspace(1,2,groups)
         # breakpoint()
@@ -285,17 +285,17 @@ class SNSPlottingWidget():
 
         for i in range(num_plots):
             bp1 = ax.boxplot(fractions[groups*i],widths = 0.5,positions=[i*(groups+1)+pos[0]],showfliers=False,labels=[compartment[0]])
-            bp2 = ax.boxplot(fractions[groups*i+groups-1],widths = 0.5,positions=[i*(groups+1)+pos[1]],showfliers=False,labels=[compartment[1]])
+            bp2 = ax.boxplot(fractions[groups*i+groups-1],widths = 0.5,positions=[i*(groups+1)+pos[1]],showfliers=False,labels=[compartment[1]],patch_artist=True, )
             x_points.append(i*(groups+1)+pos)
             x_points.append([i*(groups+1)+pos[1],(num_plots-1)*(groups+1)+pos[1]])
             x_tics.append(i*(groups+1)+pos.mean())
             pairs.append([i*groups+1,i*groups+2])
             pairs.append([i*groups+2,(num_plots-1)*groups+2])
-            self.setBoxColors(bp1,color[0],1)
-            self.setBoxColors(bp2,color[1],1)
+            self.setBoxColors(bp1,color[i],1)
+            self.setBoxColors(bp2,color[i],1,True)
         
-        plt.plot([], c=color[0], label=compartment[0])
-        plt.plot([], c=color[1], label=compartment[1])
+        # plt.plot([], c=color[0], label=compartment[0])
+        # plt.plot([], c=color[1], label=compartment[1])
         plt.xticks(x_tics, lab)
         if fractions.shape[0]>2:
             p_values = sp.posthoc_dunn(fractions, p_adjust = 'bonferroni')
@@ -307,7 +307,7 @@ class SNSPlottingWidget():
         x_points = np.asarray(x_points).flatten()
         # breakpoint()
         pairs = np.array(pairs)
-        plt.legend(loc="upper right")
+        # plt.legend(loc="upper right")
         y_max = 1
         for idx,pair in enumerate(pairs):
             txt = ''
@@ -392,11 +392,11 @@ class SNSPlottingWidget():
     def AnnotateText(self,ax,x1,x2,y,h,txt,color,ha='center',va='bottom'):
         # print(x,y,txt)
         if not txt == '':
-            fac = np.abs(x2-x1)*0.08
+            fac = np.abs(x2-x1)*0.04
             plt.plot([x1,x1, x2,x2], [y+fac, y+h+fac, y+h+fac, y+fac], lw=1.5, c=color)
             plt.text((x1+ x2)*0.5,y+h+fac,txt, ha=ha, va=va, color=color)
         
-    def setBoxColors(self,bp,c,a=1):
+    def setBoxColors(self,bp,c,a=1,flipped=False):
         setp(bp['boxes'], color=c,alpha=a)
         setp(bp['caps'], color=c,alpha=a )
         setp(bp['caps'], color=c ,alpha=a)
@@ -404,8 +404,13 @@ class SNSPlottingWidget():
         setp(bp['whiskers'], color=c ,alpha=a)
         setp(bp['fliers'], color=c ,alpha=a)
         setp(bp['fliers'], color=c ,alpha=a)
-        setp(bp['medians'], color=c,alpha=a )
+        if flipped == True:
+            setp(bp['medians'], color='w',alpha=a )
+        else:
+            setp(bp['medians'], color=c,alpha=a )
         # setp(bp['mean'], color=c ,alpha=0.8)
+        # if fill == True:
+        #     setp(bp['boxes'], facecolor=c)
 
 def adjacent_values(vals, q1, q3):
     upper_adjacent_value = q3 + (q3 - q1) * 1.5
@@ -415,13 +420,21 @@ def adjacent_values(vals, q1, q3):
     lower_adjacent_value = np.clip(lower_adjacent_value, vals[0], q1)
     return lower_adjacent_value, upper_adjacent_value
 
-def normExponential(x, b):
+def normExponential(x, params):
+    b = params['b'].value
     return np.exp(b*x)
 
-def oneExponential(x,a,b):
+def oneExponential(x,params):
+    a = params['a'].value
+    b = params['b'].value
     return a*np.exp(b*x)
-def twoExponential(x,a,b,c,d):
-    return oneExponential(x,a,b) + oneExponential(x,c,d)
+
+def twoExponential(x,params):
+    a = params['a'].value
+    b = params['b'].value
+    c = params['c'].value
+    d = params['d'].value
+    return a*np.exp(b*x) + c*np.exp(d*x)
 
 def ExpFit(ftype,xdata,ydata,sigmas,Fidx,Lidx,molecule):
     
@@ -452,6 +465,71 @@ def ExpFit(ftype,xdata,ydata,sigmas,Fidx,Lidx,molecule):
     chi_squ = ChiSq( ydata[Fidx:], y_fit[Fidx:],sigmas[Fidx:])
     print("chi-squared = ",chi_squ)
     return y_fit,r_squared,chi_squ
+
+def ExpFitWithMinimize(ftype,xdata,ydata,sigmas,Fidx,Lidx,molecule):
+    
+    """
+        Fit a function to a given distribution using lmfit minimize method
+        
+    """
+    fit_paramas = Parameters()
+    # np.random.seed(2022)
+    exp_min = -2.0
+    exp_max = 0
+    pref_min = 0
+    pref_max = 200
+
+    
+    
+    
+    if ftype == "NormE":
+        b_init = np.random.uniform(exp_min,exp_max)
+        fit_paramas.add('b',b_init,min=exp_min,max=exp_max)
+        
+        residuals = Residual(fit_paramas,normExponential,xdata[Fidx:], ydata[Fidx:])
+        out2 = minimize(Residual,params=fit_paramas,method='leastsq',args=(normExponential,xdata[Fidx:], ydata[Fidx:]))
+        report_fit(out2.params)
+        y_fit = normExponential(xdata[Fidx:],out2.params)
+        
+        # breakpoint()
+        
+    elif ftype == "1E":
+        
+        a_init = np.random.uniform(pref_min,pref_max)
+        b_init = np.random.uniform(exp_min,exp_max)
+        fit_paramas.add('a',a_init,min=pref_min,max=pref_max)
+        fit_paramas.add('b',b_init,min=exp_min,max=exp_max)
+        residuals = Residual(fit_paramas,oneExponential,xdata[Fidx:], ydata[Fidx:])
+        out2 = minimize(Residual,params=fit_paramas,method='leastsq',args=(oneExponential,xdata[Fidx:], ydata[Fidx:]))
+        report_fit(out2.params)
+        y_fit = oneExponential(xdata[Fidx:],out2.params)
+       
+    elif ftype == "2E":
+        a_init = np.random.uniform(pref_min,pref_max)
+        b_init = np.random.uniform(exp_min,exp_max)
+        c_init = np.random.uniform(pref_min,pref_max)
+        d_init = np.random.uniform(exp_min,exp_max)
+        fit_paramas.add('a',a_init,min=pref_min,max=pref_max)
+        fit_paramas.add('b',b_init,min=exp_min,max=exp_max)
+        fit_paramas.add('c',c_init,min=pref_min,max=pref_max)
+        fit_paramas.add('d',d_init,min=exp_min,max=exp_max)
+        residuals = Residual(fit_paramas,twoExponential,xdata[Fidx:], ydata[Fidx:])
+        out2 = minimize(Residual,params=fit_paramas,method='leastsq',args=(twoExponential,xdata[Fidx:], ydata[Fidx:]))
+        report_fit(out2.params)
+        y_fit = twoExponential(xdata[Fidx:],out2.params)
+    else:
+        raise NotImplementedError("ftype: {} not implemented, contact author or define it yourself".format(ftype))
+        
+    # print("fitted "+ ftype, popt)
+    
+    chi_squ = out2.chisqr
+    
+    return y_fit,chi_squ
+
+def Residual(paras,fun,x,data):
+    expected_vals = fun(x,paras)
+    res = expected_vals - data
+    return res
 
 def ChiSq(yd,y_fit,sigmas):
     nzs = np.nonzero(sigmas)
