@@ -587,7 +587,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', "--mRNA", nargs="+", default = ["Gria2"],
                         help='mRNA names to analyse works for Gria1, Gria2, CNIH2 or any combination, if all is given all four will be plotted togather. Comparison \
                             is always made against CMAKII mRNA')
-    parser.add_argument('-w', "--width", nargs="+", default = ['10'],
+    parser.add_argument('-w', "--width", nargs="+", default = ['15.0'],
                         help='dendritic width, allowed values: 5.0, 10, 15.0 or any combination')
     
     # reading the argumenst
@@ -626,7 +626,7 @@ if __name__ == '__main__':
     
     in_set = 1  #plot in_set normalized plots ?
     save_it = 1 #save the plots or not (=1 for yes)
-    ax_label = 1 #plot axis labels or not (=1 for yes)
+    ax_label = 0 #plot axis labels or not (=1 for yes)
     
     #  calculating fractions for total in soma and dendrites
     fractions, total_cell_counts = GetSomaticDendriticFraction(soma_cell_stat,dend_cell_stat)
