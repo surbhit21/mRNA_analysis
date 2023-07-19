@@ -293,14 +293,14 @@ class SNSPlottingWidget():
             pairs.append([i*groups+2,(num_plots-1)*groups+2])
             self.setBoxColors(bp1,color[i],1)
             self.setBoxColors(bp2,color[i],1,True)
-        
+        print(pairs)
         # plt.plot([], c=color[0], label=compartment[0])
         # plt.plot([], c=color[1], label=compartment[1])
         plt.xticks(x_tics, lab)
         if fractions.shape[0]>2:
             p_values = sp.posthoc_dunn(fractions, p_adjust = 'bonferroni')
         else:
-            p_val = ttest_ind(fractions[0],fractions[1]).pvalue
+            p_val = kruskal(fractions[0],fractions[1]).pvalue
             max_ind = np.asarray(pairs).max()
             p_values = np.ones((max_ind+1,max_ind+1))*p_val
         

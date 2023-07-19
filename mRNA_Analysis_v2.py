@@ -581,7 +581,7 @@ class PlottingWidgetmRNA():
         for idx,pair in enumerate(pairs):
             txt = ''
             print(p_values[pair[0]][pair[1]],pair)
-            if p_values[pair[0]][pair[1]] <= 0.5:
+            if p_values[pair[0]][pair[1]] <= 0.05:
                 txt += '*'
             if p_values[pair[0]][pair[1]] <= 0.01:
                 txt += '*'

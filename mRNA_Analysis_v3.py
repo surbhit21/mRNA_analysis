@@ -655,6 +655,7 @@ if __name__ == '__main__':
             lab1.append(mrna)
             colors.append(mRNA_COLOR_code[mrna])
         data_to_show[width] = np.asarray(data_to_show[width])
+    breakpoint()
     # loop to call the plotting function
     for width in widths_to_analyse:
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join(mRNA_to_analyse))
