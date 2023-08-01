@@ -5,27 +5,25 @@ Created on Tue Aug  2 11:22:33 2022
 
 @author: surbhitwagle
 """
-
-import pandas as pd
-from pylab import plot, show, savefig, xlim, figure, ylim, legend, boxplot, setp, axes
-import lmfit
-from lmfit import conf_interval, minimize,Minimizer, Parameters, Parameter, report_fit, printfuncs
-from operator import add
-import os
 import matplotlib.pyplot as plt
+
+from Fonkeu_et_al_2019 import GetmRNADist
+import pandas as pd
+
 from matplotlib import rc
+from mRNA_model_fitting import *
 import numpy as np
 from pathlib import Path
-from scipy.optimize import curve_fit
-from scipy.stats import ks_2samp, kruskal,ttest_ind
+from scipy.stats import ks_2samp, kruskal,ttest_ind,spearmanr,pearsonr
 import seaborn as sns
 import scikit_posthocs as sp
-from Fonkeu_et_al_2019 import GetmRNADist
+
+
 """
 Parent class for All plotting stuff
 """
 class SNSPlottingWidget():
-    def __init__(self,fsize=16,tsize=25,fam='Source Code Pro',pixelden = 100,lw=3.0,width=10,height=8):
+    def __init__(self,fsize=16,tsize=25,fam='serif',pixelden = 100,lw=3.0,width=10,height=8):
         rc('font',
             family=fam,
             size=fsize)
@@ -123,7 +121,18 @@ class SNSPlottingWidget():
                     yi_fit,chi_squ = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
                     # breakpoint()
                     ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
-            
+
+            elif fit_exp == 2:
+
+                for i in range(xs.shape[0]):
+                    # breakpoint()
+                    print("fitting Fonkeu model for {}".format(labs[i]))
+                    x1,yi_fit,chi_squ,paras,mini,out2 = FitModel( xs[i], means[i],stds[i,:])
+                    # breakpoint()
+                    # chi_squ = ChiSq(means[i],yi_fit,stds[i])
+                    ax.plot(x1, yi_fit, marker='None', c=color[i],
+                            label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
+            ax.set_xlim([-bin_size,xs[0,-1]+bin_size])
             # plt.show()
             fig.tight_layout()
             ax.legend()
@@ -273,7 +282,7 @@ class SNSPlottingWidget():
             plt.show()
           
         else:
-            print("Not same length of xs and means",xs.shape,data.shape)
+            print("Not same length of xs and means",xs.shape,data1.shape)
     def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1):
         fig, ax = plt.subplots()
         num_plots = int(fractions.shape[0]/groups)
@@ -412,131 +421,44 @@ class SNSPlottingWidget():
         # if fill == True:
         #     setp(bp['boxes'], facecolor=c)
 
-def adjacent_values(vals, q1, q3):
-    upper_adjacent_value = q3 + (q3 - q1) * 1.5
-    upper_adjacent_value = np.clip(upper_adjacent_value, q3, vals[-1])
+    def CorrelationCalculationAndPlotting(self,data_to_show, localization, compartment, x_param, y_param, y_bg_param,
+                                          f_scale=1):
+        fig, ax = plt.subplots(figsize=(10, 6), ncols=2, nrows=1)
+        sns.set(font_scale=f_scale)
+        sns.scatterplot(x=x_param, y=y_param, data=data_to_show, ax=ax[0], hue='compartment').set(
+            title="Area vs total {} intensity in {} rois".format(y_param, localization))
+        sns.scatterplot(x=x_param, y=y_bg_param, data=data_to_show, ax=ax[1], hue='compartment').set(
+            title="Area vs total {}  intensity in {} background rois".format(y_param, localization))
+        sns.regplot(x=x_param, y=y_param, data=data_to_show[data_to_show["compartment"] == compartment[0]], ax=ax[0])
+        sns.regplot(x=x_param, y=y_param, data=data_to_show[data_to_show["compartment"] == compartment[1]], ax=ax[0])
+        sns.regplot(x=x_param, y=y_bg_param, data=data_to_show[data_to_show["compartment"] == compartment[0]], ax=ax[1])
+        sns.regplot(x=x_param, y=y_bg_param, data=data_to_show[data_to_show["compartment"] == compartment[1]], ax=ax[1])
+        corr1 = pearsonr(data_to_show[data_to_show['compartment'] == compartment[0]][x_param],
+                         data_to_show[data_to_show['compartment'] == compartment[0]][y_param])
+        corr2 = pearsonr(data_to_show[data_to_show['compartment'] == compartment[0]][x_param],
+                         data_to_show[data_to_show['compartment'] == compartment[0]][y_bg_param])
+        corr3 = pearsonr(data_to_show[data_to_show['compartment'] == compartment[1]][x_param],
+                         data_to_show[data_to_show['compartment'] == compartment[1]][y_param])
+        corr4 = pearsonr(data_to_show[data_to_show['compartment'] == compartment[1]][x_param],
+                         data_to_show[data_to_show['compartment'] == compartment[1]][y_bg_param])
+        print("Correlation between {} , {} in {} {} = ".format(x_param, y_param, compartment[0], localization), corr1)
+        print("Correlation between {} , {} in {} {} = ".format(x_param, y_bg_param, compartment[0], localization),
+              corr2)
+        print("Correlation between {} , {} in {} {} = ".format(x_param, y_param, compartment[1], localization), corr3)
+        print("Correlation between {} , {} in {} {} = ".format(x_param, y_bg_param, compartment[1], localization),
+              corr4)
+        plt.show()
+    def Histogramplotting(self,df,num_bins,stats,hist_stat,alphas,colors,xlab,ylab,op_file= "",titles = [],legends =True,n_rows=1,n_cols=2,save_fig = 0):
+        fig,ax = plt.subplots(figsize=(6*n_cols,8*n_rows),nrows=n_rows,ncols=n_cols)
+        try:
+            ax = ax.flatten()
+        except:
+            ax = [ax]
+        for i in range(n_cols):
+            for j in range(len(stats)):
+                sns.histplot(df[stats[j]], alpha=alphas[j],bins=num_bins,stat=hist_stat, legend=legends, color= colors[i], ax=ax[i], edgecolor='w').\
+                    set( xlabel=xlab,ylabel=ylab)
 
-    lower_adjacent_value = q1 - (q3 - q1) * 1.5
-    lower_adjacent_value = np.clip(lower_adjacent_value, vals[0], q1)
-    return lower_adjacent_value, upper_adjacent_value
-
-def normExponential(x, params):
-    b = params['b'].value
-    return np.exp(b*x)
-
-def oneExponential(x,params):
-    a = params['a'].value
-    b = params['b'].value
-    return a*np.exp(b*x)
-
-def twoExponential(x,params):
-    a = params['a'].value
-    b = params['b'].value
-    c = params['c'].value
-    d = params['d'].value
-    return a*np.exp(b*x) + c*np.exp(d*x)
-
-def ExpFit(ftype,xdata,ydata,sigmas,Fidx,Lidx,molecule):
-    
-    """
-        Fit a function to a given distribution
-        
-    """
-    if ftype == "NormE":
-        param_bounds=([-np.inf],[np.inf])
-        popt, pcov = curve_fit(normExponential, xdata[Fidx:], ydata[Fidx:],bounds =param_bounds, maxfev=5000)
-        y_fit = normExponential(xdata, *popt)
-    elif ftype == "1E":
-        param_bounds=([-np.inf,-np.inf],[+np.inf,0])
-        popt, pcov = curve_fit(oneExponential, xdata[Fidx:], ydata[Fidx:],bounds =param_bounds)
-        y_fit = oneExponential(xdata, *popt)
-    elif ftype == "2E":
-        param_bounds=([-np.inf,-np.inf,-np.inf,-np.inf],[+np.inf,0,+np.inf,0])
-        popt, pcov = curve_fit(twoExponential, xdata[Fidx:], ydata[Fidx:],bounds =param_bounds)
-        y_fit = twoExponential(xdata, *popt)
-    else:
-        raise NotImplementedError("ftype: {} not implemented, contact author or define it yourself".format(ftype))
-        
-    print("fitted "+ ftype, popt)
-    residuals = ydata[Fidx:]- y_fit[Fidx:]
-    ss_res = np.sum(residuals**2)
-    ss_tot = np.sum((ydata[Fidx:]-np.mean(ydata[Fidx:]))**2)
-    r_squared = 1 - (ss_res / ss_tot)
-    chi_squ = ChiSq( ydata[Fidx:], y_fit[Fidx:],sigmas[Fidx:])
-    print("chi-squared = ",chi_squ)
-    return y_fit,r_squared,chi_squ
-
-def ExpFitWithMinimize(ftype,xdata,ydata,sigmas,Fidx,Lidx,molecule):
-    
-    """
-        Fit a function to a given distribution using lmfit minimize method
-        
-    """
-    fit_paramas = Parameters()
-    # np.random.seed(2022)
-    exp_min = -2.0
-    exp_max = 0
-    pref_min = 0
-    pref_max = 200
-
-    
-    
-    
-    if ftype == "NormE":
-        b_init = np.random.uniform(exp_min,exp_max)
-        fit_paramas.add('b',b_init,min=exp_min,max=exp_max)
-        
-        residuals = Residual(fit_paramas,normExponential,xdata[Fidx:], ydata[Fidx:])
-        out2 = minimize(Residual,params=fit_paramas,method='leastsq',args=(normExponential,xdata[Fidx:], ydata[Fidx:]))
-        report_fit(out2.params)
-        y_fit = normExponential(xdata[Fidx:],out2.params)
-        
-        # breakpoint()
-        
-    elif ftype == "1E":
-        
-        a_init = np.random.uniform(pref_min,pref_max)
-        b_init = np.random.uniform(exp_min,exp_max)
-        fit_paramas.add('a',a_init,min=pref_min,max=pref_max)
-        fit_paramas.add('b',b_init,min=exp_min,max=exp_max)
-        residuals = Residual(fit_paramas,oneExponential,xdata[Fidx:], ydata[Fidx:])
-        out2 = minimize(Residual,params=fit_paramas,method='leastsq',args=(oneExponential,xdata[Fidx:], ydata[Fidx:]))
-        report_fit(out2.params)
-        y_fit = oneExponential(xdata[Fidx:],out2.params)
-       
-    elif ftype == "2E":
-        a_init = np.random.uniform(pref_min,pref_max)
-        b_init = np.random.uniform(exp_min,exp_max)
-        c_init = np.random.uniform(pref_min,pref_max)
-        d_init = np.random.uniform(exp_min,exp_max)
-        fit_paramas.add('a',a_init,min=pref_min,max=pref_max)
-        fit_paramas.add('b',b_init,min=exp_min,max=exp_max)
-        fit_paramas.add('c',c_init,min=pref_min,max=pref_max)
-        fit_paramas.add('d',d_init,min=exp_min,max=exp_max)
-        residuals = Residual(fit_paramas,twoExponential,xdata[Fidx:], ydata[Fidx:])
-        out2 = minimize(Residual,params=fit_paramas,method='leastsq',args=(twoExponential,xdata[Fidx:], ydata[Fidx:]))
-        report_fit(out2.params)
-        y_fit = twoExponential(xdata[Fidx:],out2.params)
-    else:
-        raise NotImplementedError("ftype: {} not implemented, contact author or define it yourself".format(ftype))
-        
-    # print("fitted "+ ftype, popt)
-    
-    chi_squ = out2.chisqr
-    
-    return y_fit,chi_squ
-
-def Residual(paras,fun,x,data):
-    expected_vals = fun(x,paras)
-    res = expected_vals - data
-    return res
-
-def ChiSq(yd,y_fit,sigmas):
-    nzs = np.nonzero(sigmas)
-    print(nzs)
-    r_yd = np.take(yd,nzs)
-    r_yf = np.take(y_fit,nzs)
-    r_sgs = np.take(sigmas,nzs)
-    residuals = r_yd - r_yf
-    chi_squ = np.sum((residuals/r_sgs)**2)
-    return chi_squ
+            if not titles == []:
+                ax[i].set_title(titles[i])
+        plt.show()

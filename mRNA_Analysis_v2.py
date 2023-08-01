@@ -5,25 +5,27 @@ Created on Wed Nov 24 13:55:38 2021
 
 @author: surbhitwagle
 """
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import rc
-from pylab import plot, show, savefig, xlim, figure, ylim, legend, boxplot, setp, axes
+from functools import reduce
 import json
 import lmfit
 from lmfit import conf_interval, minimize,Minimizer, Parameters, Parameter, report_fit, printfuncs
+import MAP2_Analysis as mp2a
+from mRNA_model_fitting import *
+import matplotlib.pyplot as plt
+from matplotlib import rc
+import numpy as np
 from operator import add
 import os
 import pandas as pd
 from pathlib import Path
-from functools import reduce
+from pylab import plot, show, savefig, xlim, figure, ylim, legend, boxplot, setp, axes
+from mRNA_model_fitting import *
 from scipy.stats import ks_2samp, kruskal
 import seaborn as sb
 from scipy.optimize import curve_fit
 import scikit_posthocs as sp
 import seaborn as sns
-import MAP2_Analysis as mp2a
+
 
 # from scipy import stats
 

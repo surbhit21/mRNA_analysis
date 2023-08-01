@@ -176,12 +176,13 @@ def plotAndSaveMap2( num_cells_dict,Excluded_cells,bins,bin_size,width,mRNA,Leng
     folder = mRNA+"/MAP2-Figures/{}".format(width)
     pwmrna.CreateFolderRecursive(folder)
     # breakpoint()
-    for l in Lengths[1:-1]:
+    for l in Lengths:
         sum_norm_MAP2[l] = GetSumNormDistribution(binned_data_length_wise[l])
         mean_sum_norm_MAP2[l] = sum_norm_MAP2[l].mean(axis = 0)
         std_sum_norm_MAP2[l] = sum_norm_MAP2[l].std(axis = 0)
         sem_sum_norm_MAP2[l] = std_sum_norm_MAP2[l]/np.sqrt(binned_data_length_wise[l].shape[0])
         x = np.arange(0, l, bin_size)
+        print("saving .npy files for length ",l,Lengths)
         np.save(folder+"/Sum_norm_MAP2_{}_{}.npy".format(width,l),sum_norm_MAP2[l])
         np.save(folder+"/mean_MAP2_{}_{}.npy".format(width,l), mean_sum_norm_MAP2[l])
         np.save(folder+"/std_MAP2_{}_{}.npy".format(width,l), std_sum_norm_MAP2[l])

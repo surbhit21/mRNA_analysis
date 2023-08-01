@@ -15,7 +15,7 @@ from pylab import plot, show, savefig, xlim, figure, ylim, legend, boxplot, setp
 from scipy.integrate import solve_bvp
 import scipy.optimize as opt       # import root-finding algorithm
 # import sympy as sp                 # Python toolbox for symbolic maths
-
+from Utility import *
 
 
 fig_w, fig_h = 12, 4.5
@@ -44,7 +44,7 @@ color_list = [color_surf, color_cyto, color_spine, CB91_Amber, CB91_Purple, CB91
 def CreateFolderRecursive(folder):
         Path(folder).mkdir(parents=True, exist_ok=True)
 
-L= 500
+L= 100
 class mRNA_model():
     """
         Class for the steady state solution of  model equations:
@@ -76,7 +76,7 @@ class mRNA_model():
     
     def fun(self, x, y):
         """
-        function that deines the darivatives
+        function that defines the darivatives
         """
         r,dr = y
         return [
@@ -90,27 +90,29 @@ class mRNA_model():
             function for boundary condition values
         """
         return np.array([ya[1] - self.v_R*ya[0]/self.D_R + self.JRin/self.D_R,yb[1]- self.v_R*yb[0]/self.D_R])
+    
     def SolveNumerical(self):
         y = np.zeros((2,self.x_grid.size))
-        soln = solve_bvp(self.fun, self.bc, self.x_grid, y,max_nodes=1e+9, verbose=1,tol=1e-3, bc_tol=1e-8)
+        soln = solve_bvp(self.fun, self.bc, self.x_grid, y,max_nodes=1e+9, verbose=0,tol=1e-3, bc_tol=1e-8)
         # breakpoint()
         r_dist = soln.y[0]
         dr_dist = soln.y[1]
         self.x_grid = soln.x
         # breakpoint()
-        print(self.bc(soln.y[:,0],soln.y[:,-1]))
-        return r_dist
+        # print(self.bc(soln.y[:,0],soln.y[:,1]))
+        return self.x_grid,r_dist
 
 def SaveFigures(filename,ext_list = [".png",".svg",".pdf"]):
     for ext in ext_list:
         plt.savefig(filename+ext,dpi=300)
         
 
-def RunSS(delta_x,D_R,v_R):
-    mRNA_ss = mRNA_model(D_R, v_R, 0.416, 0.001, delta_x)
-    r_dist = mRNA_ss.SolveNumerical()
-    plt.plot(mRNA_ss.x_grid,r_dist)
-RunSS(0.1,0.03,0.00058)
+def RunSS(D_R,v_R):
+    mRNA_ss = mRNA_model(D_R, v_R, 0.416, 0.001,0.012 )
+    x_grid,r_dist = mRNA_ss.SolveNumerical()
+    return x_grid,r_dist
+    # plt.plot(mRNA_ss.x_grid,r_dist)
+
 
 
 

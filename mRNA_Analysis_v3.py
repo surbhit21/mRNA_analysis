@@ -7,16 +7,12 @@ Created on Tue Aug  2 11:38:33 2022
 """
 import argparse
 import json
-import lmfit
 import matplotlib.pyplot as plt
 import MAP2_Analysis as mp2a
-import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
 import os
 from pathlib import Path
-from scipy.optimize import curve_fit
 from SNSPlottingWidget import SNSPlottingWidget
-
+from Utility import *
 # from scipy import stats
 
 # The type of mRNA to analyse, possbile choices: "Gria1", "Gria2", "CNIH2", "All"
@@ -46,8 +42,7 @@ soma_data_meta = {}
 
 mRNA_COLOR_code = {"Gria1":'#606C38',"Gria2":'#283618',"CNIH2":'#DDA15E',"CAMKII":'#BC6C25'}
 
-# possbile lengths for dendritic distributions
-Lengths = np.asarray([2,25,50,100,125,200,250])
+
 
 #  dendritic widths analysis
 widths = [5.0,10,15.0]
@@ -83,7 +78,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
         # MAP2_sem[width] = []
         MAP2_Sum_norm[width] = {}
         for mRNA in mRNA_to_analyse:
-            
+            print("call MAP2 analysis")
             mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA,lengths)
              #  intializing dictionaries to store processed data length wise
             soma_data[width][mRNA],dend_data[width][mRNA],dend_data_meta[width][mRNA],soma_data_meta[width][mRNA] = {},{},{},{}
@@ -345,66 +340,22 @@ def GetPunctaDicts(od,bins=None):
     return total_count ,cell_count ,unit_count, total_stat,cell_stat,unit_stat
             
 
-def BinnedSum(arr,bins,num_col=-1,name= None):
-    # print("binned_sum for =",name)
-    
-    if len(arr.shape) == 2:
-        rr,cc = arr.shape 
-        binned_sum = np.zeros((len(bins),cc))
-        arr = SortPunctas(arr,num_col)
-        # max_lenght = arr[-1,-1]
-        digitized = bins.searchsorted(arr[:,num_col])
-        
-        #     breakpoint()
-        for c in range(0,cc):
-            try:
-                binned_sum[:,c] = np.bincount(digitized, weights=arr[:,c], minlength=len(bins))
-            except:
-                print("puncta is ",arr)
-                breakpoint()
-        binned_sum[:,num_col] = bins
-        return binned_sum
-    else:
-        print("quite not the shape",arr.shape)
-        return np.zeros((len(bins),6))
-def GetUniqueRows(mat):
-    return np.unique(mat,axis = 0)
+
 
 
     
 
 
-def GetDictSum(d):
-    dict_sum = np.zeros(6)
-    for key in d.keys():
-        dict_dum = np.sum(dict_sum, GetRNAPunctaStat(d[key]))
-
-def GetMatSum(mat,ax=0):
-    return np.sum(mat,axis=ax)
-
-def SortPunctas(ps,column=0):
-    return ps[ps[:,column].argsort()]
 
 def GetAllPunctastat(all_punctas):
     all_stats = []
     for puncta in all_punctas:
         all_stats.append(GetRNAPunctaStat(puncta))
     return np.asarray(all_stats)
-def GetRNAPunctaStat(puncta):
-    #the puncta is of the form (x,y,r,max,min,mean.std,median, insoma,distance_from_soma)
-    x,y,r,mx,mn,mu,delta,med,inSoma,dfs = puncta
-    
-    area = Area(r)
-    stat1 =  area*mu
-    stat2 = area*med
-    stat3 = mu
-    stat4 = med
-    stat5 = area
-    return np.array([stat1,stat2,stat3,stat4,stat5,1,dfs])
 
 
-def Area(radius):
-    return np.pi*(radius**2)
+
+
 
 def GetLengthCounts(meta_dict):
     l_count=np.zeros(len(Lengths))
@@ -507,27 +458,27 @@ class PlottingWidgetmRNA(SNSPlottingWidget):
     
     
     
-    def PlotBinnedStatsMulti(self,x,data_1,lab1,xlab,ylab,title_string,file_name,width=10,height=8,fsize=16,save_it = 1,set_axis_label=1):
-        fig, ax = plt.subplots(figsize=(width, height))
-        plt.rc('font', **{'family':'serif','serif':['Palatino']})
-        plt.rc('text', usetex=True)
-        
-        for d in data_1:
-            plt.plot(x,d,color=CB91_Blue,alpha=0.2)
-        ax.set_xlabel(xlab,fontsize=fsize)
-        ax.set_ylabel(ylab,fontsize=fsize)
-        plt.title(title_string,fontsize=fsize)
-        ax.plot(x,np.zeros(x.shape),'k--',label='=0')
-        plt.legend(prop={'size': fsize})
-        # plt.show()
-        fig.tight_layout()
-        folder = "."
-        if save_it == 1:
-            self.SaveFigures(file_name)
-            print("saved figures to: {%s/%s}" %(folder, file_name))
-        else:
-            print("Plots not saved")
-        plt.show()
+    # def PlotBinnedStatsMulti(self,x,data_1,lab1,xlab,ylab,title_string,file_name,width=10,height=8,fsize=16,save_it = 1,set_axis_label=1):
+    #     fig, ax = plt.subplots(figsize=(width, height))
+    #     plt.rc('font', **{'family':'serif','serif':['Palatino']})
+    #     plt.rc('text', usetex=True)
+    #
+    #     for d in data_1:
+    #         plt.plot(x,d,color=CB91_Blue,alpha=0.2)
+    #     ax.set_xlabel(xlab,fontsize=fsize)
+    #     ax.set_ylabel(ylab,fontsize=fsize)
+    #     plt.title(title_string,fontsize=fsize)
+    #     ax.plot(x,np.zeros(x.shape),'k--',label='=0')
+    #     plt.legend(prop={'size': fsize})
+    #     # plt.show()
+    #     fig.tight_layout()
+    #     folder = "."
+    #     if save_it == 1:
+    #         self.SaveFigures(file_name)
+    #         print("saved figures to: {%s/%s}" %(folder, file_name))
+    #     else:
+    #         print("Plots not saved")
+    #     plt.show()
     def SaveFigures(self,filename,ext_list = [".png",".svg",".pdf"]):
         for ext in ext_list:
             plt.savefig(filename+ext,dpi=300)
@@ -552,30 +503,15 @@ def ExpFit(xdata,ydata,sigmas,Fidx,Lidx,molecule):
     print(chi_squ)
     return y_fit,r_squared,chi_squ
 
-def ChiSq(yd,y_fit,sigmas):
-    nzs = np.nonzero(sigmas)
-    print(nzs)
-    r_yd = np.take(yd,nzs)
-    r_yf = np.take(y_fit,nzs)
-    r_sgs = np.take(sigmas,nzs)
-    residuals = r_yd - r_yf
-    chi_squ = np.sum((residuals/r_sgs)**2)
-    return chi_squ
-def ExpFit2(xdata,ydata,sigmas,Fidx,Lidx,molecule):
-    pars = Parameters()
-    pars.add('amplitude',1,vary=False)
-    pars.add('decay',1,min=0)
-    mod = lmfit.models.ExponentialModel()
-    out = mod.fit(ydata[Fidx:], pars, x=xdata[Fidx:])
-    y_fit = exponential(xdata[Fidx:],-1.0/out.params['decay'])
-    residuals = ydata[Fidx:]- y_fit[Fidx:]
-    ss_res = np.sum(residuals**2)
-    ss_tot = np.sum((ydata[Fidx:]-np.mean(ydata[Fidx:]))**2)
-    r_squared = 1 - (ss_res / ss_tot)
-    chi_squ = np.sum((residuals/sigmas)**2)
-    print("here",chi_squ)
-    # breakpoint()
-    return y_fit,r_squared,out.chisqr
+# def ChiSq(yd,y_fit,sigmas):
+#     nzs = np.nonzero(sigmas)
+#     print(nzs)
+#     r_yd = np.take(yd,nzs)
+#     r_yf = np.take(y_fit,nzs)
+#     r_sgs = np.take(sigmas,nzs)
+#     residuals = r_yd - r_yf
+#     chi_squ = np.sum((residuals/r_sgs)**2)
+#     return chi_squ
 
             
 if __name__ == '__main__':
@@ -584,10 +520,10 @@ if __name__ == '__main__':
         parsing argumenst on mRNA and widths to be analysed. Each length is analysed seperately. mRNAs can be analysed in combinations
     """
     parser = argparse.ArgumentParser(description='mRNA analysis.py file ')
-    parser.add_argument('-m', "--mRNA", nargs="+", default = ["Gria2"],
+    parser.add_argument('-m', "--mRNA", nargs="+", default = ["all"],
                         help='mRNA names to analyse works for Gria1, Gria2, CNIH2 or any combination, if all is given all four will be plotted togather. Comparison \
                             is always made against CMAKII mRNA')
-    parser.add_argument('-w', "--width", nargs="+", default = ['15.0'],
+    parser.add_argument('-w', "--width", nargs="+", default = ['10'],
                         help='dendritic width, allowed values: 5.0, 10, 15.0 or any combination')
     
     # reading the argumenst
@@ -615,9 +551,6 @@ if __name__ == '__main__':
              dend_total_count ,dend_cell_count ,dend_unit_count, dend_total_stat, dend_cell_stat, dend_unit_stat,c_ls,\
                  MAP2_mean,MAP2_std,MAP2_sem  = ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,channel_3_mRNA,lengths_to_analyse)
     
-    
-    
-    
     # dend_cell_sum = {}
     
         
@@ -644,7 +577,7 @@ if __name__ == '__main__':
     x_lab,y_lab = ["mRNA","Fraction of mRNA in Soma Vs. dendrites"]
     title = "Quatification of Dendritic and Somatic mRNA copy-number";
     
-    breakpoint()
+    # breakpoint()
     # setting up the data,labels, colors to plot in the correct format
     for width in fractions.keys():
         data_to_show[width] = []
@@ -655,7 +588,7 @@ if __name__ == '__main__':
             lab1.append(mrna)
             colors.append(mRNA_COLOR_code[mrna])
         data_to_show[width] = np.asarray(data_to_show[width])
-    breakpoint()
+    # breakpoint()
     # loop to call the plotting function
     for width in widths_to_analyse:
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join(mRNA_to_analyse))
@@ -739,8 +672,9 @@ if __name__ == '__main__':
     MAP2_norm_means = {}
     MAP2_nrom_stds = {}
     MAP2_norm_sems = {}
-    breakpoint()
-    
+    # breakpoint()
+    count_fittings = [0,0,0,1,0]
+    norm_fittings = [0,0,0,2,0 ]
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
             labs = [mrna,channel_3_mRNA]
@@ -748,7 +682,7 @@ if __name__ == '__main__':
             title = "Spatial distribution of mRNA copy-number"
             file_prefix = "Spatial_mRNA_distribution"
             plot_colors = [mRNA_COLOR_code[mrna],mRNA_COLOR_code[channel_3_mRNA]]
-            for l1 in lengths_to_analyse:
+            for ldx,l1 in enumerate(lengths_to_analyse):
                 dend_dist = {}
                 xs = np.arange(0,l1,bin_size)
                 means = np.zeros((2,xs.shape[0]))
@@ -799,10 +733,10 @@ if __name__ == '__main__':
                 #                   ,bin_size,save_it = save_it,set_axis_label=ax_label,exp_method="NormE")
                 # #
                 pw.PlotBinnedStats(np.asarray([xs,xs]), MAP2_norm_means, MAP2_norm_stds,norm_density_mean, labs, x_lab, y_lab, y_lab_norm,plot_colors,title, op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
-                                  ,bin_size,save_it = save_it,fit_exp=1,in_set=in_set,set_axis_label=ax_label,exp_method="1E")
+                                  ,bin_size,save_it = save_it,fit_exp=count_fittings[ldx],in_set=in_set,set_axis_label=ax_label,exp_method="1E")
                 # breakpoint()
                 pw.PlotBinnedStats(np.asarray([xs,xs]), norm_density_mean, norm_density_std, norm_density_mean, labs, x_lab, y_lab, y_lab_norm, plot_colors,title, op_folder+file_prefix+"_norm__with_fit_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
-                                    , bin_size,save_it = save_it,fit_exp=1,in_set=0,set_axis_label=ax_label)
+                                    , bin_size,save_it = save_it,fit_exp=norm_fittings[ldx],in_set=0,set_axis_label=ax_label)
                 # breakpoint()
                 # op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join([channel_3_mRNA]))
                 # pw.CreateFolderRecursive(op_folder)
