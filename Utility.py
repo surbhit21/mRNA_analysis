@@ -2,20 +2,22 @@ import numpy as np
 import lmfit
 from lmfit import  minimize, Parameters, report_fit
 from scipy.optimize import curve_fit
-
+from pathlib import Path
 
 # for the numerical integration of mRNA and protein trafficking models
 delta_x = 0.012
-
+model_L = 500
 # possbile lengths for dendritic distributions
-Lengths = np.asarray([2,25,50,75,100,125,200,250])
-bin_size = 5
+Lengths = np.asarray([2,25,50,75,100,125,150,200,250])
+bin_size = 2.5
 bins = np.arange(0, Lengths.max(), bin_size)
 COLORS = ["#005f73","#9b2226","#CA6702","#337357"]
 COLORS_dict = {"spine":"#005f73","shaft":'#CA6702',"spine_s":"#005f73","spine_i":'#CA6702',"shaft_s":"#005f73","shaft_i":'#CA6702'}
 def Area(radius):
     return np.pi*(radius**2)
 
+def CreateFolderRecursive(folder):
+    Path(folder).mkdir(parents=True, exist_ok=True)
 def GetRNAPunctaStat(puncta):
     # the puncta is of the form (x,y,r,max,min,mean.std,median, insoma,distance_from_soma)
     x, y, r, mx, mn, mu, delta, med, inSoma, dfs = puncta
@@ -45,7 +47,7 @@ def ChiSq(yd,y_fit,sigmas):
     r_yd = np.take(yd,nzs)
     r_yf = np.take(y_fit,nzs)
     r_sgs = np.take(sigmas,nzs)
-    print("r_sgs = ",r_sgs)
+    # print("r_sgs = ",r_sgs)
     residuals = r_yd - r_yf
     chi_squ = np.sum((residuals/ r_sgs)**2)
     # print(residuals,r_sgs)
@@ -218,4 +220,21 @@ def Residual(paras, fun, x, data):
     res = expected_vals - data
     return res
 
+def getminmax(arr,orig_min=np.Inf,orig_max=-np.Inf):
+    if np.min(arr) < orig_min:
+        orig_min = np.min(arr)
+    if np.max(arr) > orig_max:
+        orig_max = np.max(arr)
+    return orig_min,orig_max
 
+
+def exp_fit(x,a,b):
+    return a*np.exp(-b*x)
+
+def line_fit(x, m,c):
+    return m*x + c
+def R_seq(y_fit,y_orig):
+    ss_res = ((y_orig-y_fit)**2).sum()
+    ss_tot = ((y_orig-y_orig.mean())**2).sum()
+    # print("in R_Seq =",ss_tot,ss_res)
+    return 1 - (ss_res/ss_tot)

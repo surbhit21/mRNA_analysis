@@ -28,10 +28,10 @@ Excluded_cells= {"CNIH2":[],"Gria1":[],"Gria2":[3,9,10]}
 # channel_names
 
 
-#  two scales 
+#  two scales_mRNA 
 # scale1 = 2.408  #pixels/uM
 # scale2 = 7.587 #pixels/uM
-scales = {"CNIH2":[2.408,7.587],"Gria1":[4.817,4.817],"Gria2":[4.817,7.587]}
+scales_mRNA = {"CNIH2":[2.408,7.587],"Gria1":[4.817,4.817],"Gria2":[4.817,7.587]}
 # channels to include
 channels = [1,3]
 
@@ -131,7 +131,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
                      # breakpoint()
                      if Path(file).is_file():
                         # print("file exists")
-                        dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_{0}/".format(cell),scales[mRNA][0])
+                        dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_{0}/".format(cell),scales_mRNA[mRNA][0])
                         total_d_count += len(dend_data_meta[width][mRNA][cell].keys())
                         f_d = open(file)
                         dend_data[width][mRNA][cell] = json.load(f_d)
@@ -141,7 +141,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
                         soma_data[width][mRNA][cell] = json.load(f_s)
                         f_s.close()
                         
-                        dend_data_meta[width][channel_3_mRNA][channel_3_count],soma_data_meta[width][channel_3_mRNA][channel_3_count] = LoadDend(folder+"cell_{0}/".format(cell),scales[mRNA][0])
+                        dend_data_meta[width][channel_3_mRNA][channel_3_count],soma_data_meta[width][channel_3_mRNA][channel_3_count] = LoadDend(folder+"cell_{0}/".format(cell),scales_mRNA[mRNA][0])
                         f_d = open(file3)
                         dend_data[width][channel_3_mRNA][channel_3_count] = json.load(f_d)
                         f_d.close()
@@ -151,7 +151,7 @@ def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,cha
                         f_s.close()
                         channel_3_count += 1
                      if Path(file2).is_file():
-                        dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_"+str(cell)+"/",scales[mRNA][1])
+                        dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_"+str(cell)+"/",scales_mRNA[mRNA][1])
                         total_d_count += len(dend_data_meta[width][mRNA][cell].keys())
                         f_d = open(file2)
                         dend_data[width][mRNA][cell] = json.load(f_d)
@@ -520,7 +520,7 @@ if __name__ == '__main__':
         parsing argumenst on mRNA and widths to be analysed. Each length is analysed seperately. mRNAs can be analysed in combinations
     """
     parser = argparse.ArgumentParser(description='mRNA analysis.py file ')
-    parser.add_argument('-m', "--mRNA", nargs="+", default = ["all"],
+    parser.add_argument('-m', "--mRNA", nargs="+", default = ["CNIH2"],
                         help='mRNA names to analyse works for Gria1, Gria2, CNIH2 or any combination, if all is given all four will be plotted togather. Comparison \
                             is always made against CMAKII mRNA')
     parser.add_argument('-w', "--width", nargs="+", default = ['10'],

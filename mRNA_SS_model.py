@@ -7,14 +7,9 @@ Created on Wed Jul 19 10:33:54 2023
 """
 
 
-import json
+
 import matplotlib.pyplot as plt
-import math
-import numpy as np
-from pylab import plot, show, savefig, xlim, figure, ylim, legend, boxplot, setp, axes
 from scipy.integrate import solve_bvp
-import scipy.optimize as opt       # import root-finding algorithm
-# import sympy as sp                 # Python toolbox for symbolic maths
 from Utility import *
 
 
@@ -41,20 +36,11 @@ CB91_Amber = '#F5B14C'
 color_list = [color_surf, color_cyto, color_spine, CB91_Amber, CB91_Purple, CB91_Violet]
 
 
-def CreateFolderRecursive(folder):
-        Path(folder).mkdir(parents=True, exist_ok=True)
-
-L= 100
 class mRNA_model():
     """
         Class for the steady state solution of  model equations:
-            \frac{\partial P_c}{dt} = D_c \frac{\partial^2 P_c}{\partial x^2} - V_p\frac{\partial P_c}{\partial x} 
-            - \lambda_c P_c - \beta P_c + \alpha P_s
-            
-            \frac{\partial P_s}{dt} &= D_s \frac{\partial^2 P_s}{\partial x^2} - \lambda_s P_s -\alpha P_s 
-            + \beta P_c -\eta P_s (\omega- P_{spine}) + \gamma P_{spine}  
-             
-            \frac{\partial P_{spine}}{dt} &= \eta P_s (\omega- P_{spine}) - \gamma P_{spine} 
+           Class for the steady state solution of mRNA model equations from Fonkeu et al. 2019 under closed BC at x = L
+           and constant flux at x=0.
     """
 
     def __init__(self, D_R, v_R, half_life_mRNA,JRin, dx):
@@ -64,14 +50,14 @@ class mRNA_model():
         self.k_R = np.log(2)/(self.t_half_mRNA*24*60*60); 
         self.JRin = JRin
         self.dx = dx
-        self.x_grid = np.arange(0,L,dx)
+        self.x_grid = np.arange(0,model_L,dx)
         
     
     def GetSSDist(self):
         lambda_r1 = (-self.v_R + np.sqrt(self.v_R**2 + (4*self.D_R*self.k_R)))/(2*self.D_R)
         lambda_r2 = (-self.v_R - np.sqrt(self.v_R**2 + (4*self.D_R*self.k_R)))/(2*self.D_R)
-        C1 = (self.JRin*np.exp(-1.*lambda_r2*L))/((self.v_R*self.D_R*lambda_r1)*(np.exp(-1.*lambda_r1*L) - np.exp(-1.*lambda_r2*L)))
-        C2 = (self.JRin*np.exp(-1.*lambda_r1*L))/((self.v_R*self.D_R*lambda_r2)*(np.exp(-1.*lambda_r2*L) - np.exp(-1.*lambda_r1*L)))
+        C1 = (self.JRin*np.exp(-1.*lambda_r2*model_L))/((self.v_R*self.D_R*lambda_r1)*(np.exp(-1.*lambda_r1*model_L) - np.exp(-1.*lambda_r2*model_L)))
+        C2 = (self.JRin*np.exp(-1.*lambda_r1*model_L))/((self.v_R*self.D_R*lambda_r2)*(np.exp(-1.*lambda_r2*model_L) - np.exp(-1.*lambda_r1*model_L)))
         print(lambda_r1,lambda_r2,C1,C2)
     
     def fun(self, x, y):
@@ -112,6 +98,8 @@ def RunSS(D_R,v_R):
     x_grid,r_dist = mRNA_ss.SolveNumerical()
     return x_grid,r_dist
     # plt.plot(mRNA_ss.x_grid,r_dist)
+    # plt.show()
+# RunSS(0.1,0.003)
 
 
 

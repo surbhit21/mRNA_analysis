@@ -9,8 +9,10 @@ import matplotlib.pyplot as plt
 
 from Fonkeu_et_al_2019 import GetmRNADist
 import pandas as pd
-
+import matplotlib
+matplotlib.use('Qt5Agg')
 from matplotlib import rc
+from matplotlib.pyplot import setp
 from mRNA_model_fitting import *
 import numpy as np
 from pathlib import Path
@@ -421,18 +423,19 @@ class SNSPlottingWidget():
         # if fill == True:
         #     setp(bp['boxes'], facecolor=c)
 
-    def CorrelationCalculationAndPlotting(self,data_to_show, localization, compartment, x_param, y_param, y_bg_param,
-                                          f_scale=1):
-        fig, ax = plt.subplots(figsize=(10, 6), ncols=2, nrows=1)
+    def CorrelationCalculationAndPlotting(self,data_to_show, localization, compartment, x_param, y_param, y_bg_param,op_file,
+                                          f_scale=1,save_it = 0):
+        fig, ax = plt.subplots(figsize=(16, 6), ncols=2, nrows=1)
         sns.set(font_scale=f_scale)
         sns.scatterplot(x=x_param, y=y_param, data=data_to_show, ax=ax[0], hue='compartment').set(
-            title="Area vs total {} intensity in {} rois".format(y_param, localization))
+            title="Area vs  {} intensity in {} rois".format(y_param, localization))
         sns.scatterplot(x=x_param, y=y_bg_param, data=data_to_show, ax=ax[1], hue='compartment').set(
-            title="Area vs total {}  intensity in {} background rois".format(y_param, localization))
+            title="Area vs  {}  intensity in {} background rois".format(y_param, localization))
         sns.regplot(x=x_param, y=y_param, data=data_to_show[data_to_show["compartment"] == compartment[0]], ax=ax[0])
         sns.regplot(x=x_param, y=y_param, data=data_to_show[data_to_show["compartment"] == compartment[1]], ax=ax[0])
         sns.regplot(x=x_param, y=y_bg_param, data=data_to_show[data_to_show["compartment"] == compartment[0]], ax=ax[1])
         sns.regplot(x=x_param, y=y_bg_param, data=data_to_show[data_to_show["compartment"] == compartment[1]], ax=ax[1])
+        fig.tight_layout()
         corr1 = pearsonr(data_to_show[data_to_show['compartment'] == compartment[0]][x_param],
                          data_to_show[data_to_show['compartment'] == compartment[0]][y_param])
         corr2 = pearsonr(data_to_show[data_to_show['compartment'] == compartment[0]][x_param],
@@ -447,9 +450,11 @@ class SNSPlottingWidget():
         print("Correlation between {} , {} in {} {} = ".format(x_param, y_param, compartment[1], localization), corr3)
         print("Correlation between {} , {} in {} {} = ".format(x_param, y_bg_param, compartment[1], localization),
               corr4)
+        if save_it == 1:
+            self.SaveFigures(op_file)
         plt.show()
-    def Histogramplotting(self,df,num_bins,stats,hist_stat,alphas,colors,xlab,ylab,op_file= "",titles = [],legends =True,n_rows=1,n_cols=2,save_fig = 0):
-        fig,ax = plt.subplots(figsize=(6*n_cols,8*n_rows),nrows=n_rows,ncols=n_cols)
+    def Histogramplotting(self,df,num_bins,stats,hist_stat,alphas,colors,xlab,ylab,op_file= "",titles = [],legends =True,n_rows=1,n_cols=2,save_it = 0):
+        fig,ax = plt.subplots(figsize=(6*n_cols,8*n_rows),nrows=n_rows,ncols=n_cols )
         try:
             ax = ax.flatten()
         except:
@@ -461,4 +466,7 @@ class SNSPlottingWidget():
 
             if not titles == []:
                 ax[i].set_title(titles[i])
+        fig.tight_layout()
+        if save_it == 1:
+            self.SaveFigures(op_file)
         plt.show()

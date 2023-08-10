@@ -21,7 +21,7 @@ from SNSPlottingWidget import SNSPlottingWidget
 from statannotations.Annotator import Annotator
 from Utility import *
 
-scale = 0.12
+scale_CNIH2_protein = 0.12
 # A class that reads, bins, normalizes data
 COLORS = ["#005f73","#9b2226","#CA6702","#337357"]
 COLORS_dict = {"spine":"#005f73","shaft":'#CA6702',"spine_s":"#005f73","spine_i":'#CA6702',"shaft_s":"#005f73","shaft_i":'#CA6702'}
@@ -142,7 +142,7 @@ class CNHI2DataAnalysis():
         off_set = 0
         for l in Lengths[:-2]:
             x = np.arange(0, l, bin_size)
-            x1 = np.arange(0, l, scale)
+            x1 = np.arange(0, l, scale_CNIH2_protein)
             if soma_norm == 1:
                 norm_CNIH2[l] = self.GetSomaNormDistribution(CNIH2_data[l], index=off_set)
                 norm_GluA2[l] = self.GetSomaNormDistribution(Glua2_data[l], index=off_set)
@@ -301,7 +301,7 @@ class CNHI2DataAnalysis():
 
                             # getting raw values only upto length l
 
-                            x_n = int(np.ceil(l / scale))
+                            x_n = int(np.ceil(l / scale_CNIH2_protein))
                             raw_CNIH2_data[l].append(CNIH2_data[:, 1])
                             raw_Glua2_data[l].append(Glua2_data[:, 1])
 
@@ -451,7 +451,7 @@ class CNHI2DataAnalysis():
         off_set = 0
         for l in Lengths[:-2]:
             x = np.arange(0, l, bin_size)
-            x1 = np.arange(0, l, scale)
+            x1 = np.arange(0, l, scale_CNIH2_protein)
             if soma_norm == 1:
                 norm_CNIH2[l] = self.GetSomaNormDistribution(CNIH2_data[l], index=off_set)
                 norm_GluA2[l] = self.GetSomaNormDistribution(Glua2_data[l], index=off_set)
@@ -610,7 +610,7 @@ class CNHI2DataAnalysis():
 
                             # getting raw values only upto length l
 
-                            x_n = int(np.ceil(l / scale))
+                            x_n = int(np.ceil(l / scale_CNIH2_protein))
                             raw_CNIH2_data[l].append(CNIH2_data[:, 1])
                             raw_Glua2_data[l].append(Glua2_data[:, 1])
 
@@ -657,6 +657,7 @@ mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density,\
 mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density= G2DA_c.GetNormalizedDendriticDistribution(MAP2_length_data,MAP2_length_data)
 
 
+plt_widget = SNSPlottingWidget()
 ## sanity check to see if the Rois and Background has same area
 
 roi_area_ratio = pd.DataFrame()
@@ -674,37 +675,27 @@ y1 = x1
 sns.lineplot(x1,y1,color='r',label="y=1")
 plt.show()
 
-plt_widget = SNSPlottingWidget()
+
 
 ## histogram of foreground and background Fluorescent
 
 num_bins = 10
-# fig,ax = plt.subplots(figsize=(12,8),ncols=2,nrows=1)
-# di,ds = ax.flatten()
-# di.set_title("dendrite GluA2")
-# ds.set_title("dendrite CNIH2")
-# sns.histplot(dendrites_int["intden-bg"], alpha=0.8,
-#     stat="count", legend=True,color=COLORS_dict["shaft_i"],ax=di,edgecolor='w')
-# sns.histplot(dendrites_int["intden"],  alpha=0.2,
-#     stat="count",legend=True,color=COLORS_dict["shaft_i"],ax=di,fill=False).set( xlabel=r"Integral density [a.b.u]",ylabel=r"Count")
-# sns.histplot(dendrites_surf["intden-bg"], alpha=0.8,
-#     stat="count",legend=True,color=COLORS_dict["shaft_s"],ax=ds,edgecolor='w')
-# sns.histplot(dendrites_surf["intden"], alpha=0.2,
-#     stat="count",legend=True,color=COLORS_dict["shaft_s"],ax=ds,fill=False).set( xlabel=r"Integral density [a.b.u]",ylabel=r"Count")
-
-# plt.show()
 stats = np.array([["mean","mean-bg"]])
 alphas = np.array([0.8,0.2])
 colors = np.array([COLORS_dict["spine_i"],COLORS_dict["shaft_i"]])
 
 # plotting function signature
 # plt_widget.Histogramplotting(df,num_bins,stats,hist_stat,alphas,colors,xlab,ylab,op_file= "",titles = [],legends =True,n_rows=1,n_cols=2,save_fig = 0)
-
-plt_widget.Histogramplotting(dendrites_CNIH2,10,stats,"count",alphas,colors,"mean fluorescent intesity [a.b.u]","Count",n_cols=1)
-plt_widget.Histogramplotting(dendrites_Glua2,10,stats,"count",alphas,colors,"mean fluorescent intesity [a.b.u]","Count",n_cols=1)
-
-plt_widget.Histogramplotting(somas_CNIH2,5,stats,"count",alphas,colors,"mean fluorescent intesity [a.b.u]","Count",n_cols=1)
-plt_widget.Histogramplotting(somas_Glua2,5,stats,"count",alphas,colors,"mean fluorescent intesity [a.b.u]","Count",n_cols=1)
+op_folder = "./Figures/Protein/"
+plt_widget.CreateFolderRecursive(op_folder)
+x_lab = "Mean fluorescent intesity [a.b.u]"
+y_lab = "Count"
+save_it = 1
+# plt_widget.Histogramplotting(dendrites_CNIH2,10,stats,"count",alphas,colors,x_lab,y_lab,op_file=os.path.join(op_folder,"Mean_intensity_dend_CNIH2_histogram"),n_cols=1,save_it=save_it)
+# plt_widget.Histogramplotting(dendrites_Glua2,10,stats,"count",alphas,colors,x_lab,y_lab,op_file=os.path.join(op_folder,"Mean_intensity_dend_GluA2_histogram"),n_cols=1,save_it=save_it)
+#
+# plt_widget.Histogramplotting(somas_CNIH2,5,stats,"count",alphas,colors,x_lab,y_lab,op_file=os.path.join(op_folder,"Mean_intensity_soma_GluA2_histogram"),n_cols=1,save_it=save_it)
+# plt_widget.Histogramplotting(somas_Glua2,5,stats,"count",alphas,colors,x_lab,y_lab,op_file=os.path.join(op_folder,"Mean_intensity_soma_GluA2_histogram"),n_cols=1,save_it=save_it)
 
 stat1 = "mean"
 stat2 = "area"
@@ -713,5 +704,68 @@ y_param = stat1
 x_param = stat2
 y_bg_param = stat1+"-bg"
 # dts = concat_data
-plt_widget.CorrelationCalculationAndPlotting(Glua2_df,"GluA2",compartments,x_param,y_param,y_bg_param,f_scale=1)
-plt_widget.CorrelationCalculationAndPlotting(CNIH2_df,"CNIH2",compartments,x_param,y_param,y_bg_param,f_scale=1)
+# plt_widget.CorrelationCalculationAndPlotting(Glua2_df,"GluA2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_GluA2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
+# plt_widget.CorrelationCalculationAndPlotting(CNIH2_df,"CNIH2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_CNIH2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
+
+
+to_analyse = Lengths[1:-2]
+fig,ax2 = plt.subplots(figsize=(8,6*len(to_analyse)),ncols=1,nrows=len(to_analyse))
+# lta = 100
+for ldx,l1 in enumerate(to_analyse):
+    x_range =  np.arange(0, l1, bin_size)
+    ax2[ldx].plot(x_range,mean_CNIH2[l1],color=COLORS_dict["shaft_s"],label="CNIH2",marker='s',linestyle="--")
+    ax2[ldx].plot(x_range,mean_MAP2_density[l1],color="r",label="MAP2",marker='o',linestyle="-")
+    ax2[ldx].plot(x_range,mean_Glua2[l1],color=COLORS_dict["shaft_i"],label="GluA2",marker='d',linestyle="-.")
+    ax2[ldx].set_ylabel("Normalized fluorescence",fontsize=14)
+    ax2[ldx].set_xlabel("Dendritic distance in $\mu m$ N = {}".format(CNIH2_length_data[l1].shape[0]),fontsize=14)
+    ax2[ldx].set_title("Dendritic distribution of  normalized fluorescence",fontsize=14)
+    ax2[ldx].legend()
+    ax2[ldx].set_xlim([-1,l1])
+    ax2[ldx].set_ylim([0.0,1.6])
+plt.tight_layout()
+plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_dist_CNIH2_GluA2_MAP2"))
+plt.show()
+
+fig, ax1 = plt.subplots(figsize=(8, 30), ncols=1, nrows=len(to_analyse))
+# x_100 =  np.arange(0, 100, bin_size)
+for ldx, l1 in enumerate(to_analyse):
+    x_range = np.arange(0, l1, bin_size)
+    ax1[ldx].plot(x_range, mean_CNIH2_density[l1], color=COLORS_dict["shaft_s"],
+                      label="CNIH2", marker="o",linestyle="-",alpha=0.5)
+    # ax1[ldx].errorbar(x_range+bin_size/2,mean_Glua2_density[l1],sem_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="GluA2")
+
+    # popt, pcov = curve_fit(line_fit, x_range+bin_size/2, mean_CNIH2_density[l1])
+    popt_e, pcov_e = curve_fit(exp_fit, x_range, mean_CNIH2_density[l1])
+
+    bp = int(12 / bin_size)  # untill 10 microns
+    d1, d2 = np.split(mean_CNIH2_density[l1], [bp])
+    x1, x2 = np.split(x_range, [bp])
+    print(x1,x2)
+    sem1, sem2 = np.split(sem_CNIH2_density[l1], [bp])
+    popt_e1, pcov_e1 = curve_fit(exp_fit, x1, d1)
+    popt_e2, pcov_e2 = curve_fit(exp_fit, x2, d2)
+    # print(popt_e1, popt_e2, popt_e)
+    mean_fit_e1 = exp_fit(x1, *popt_e1)
+    mean_fit_e2 = exp_fit(x2, *popt_e2)
+    mean_fit_exp = exp_fit(x_range, *popt_e)
+    # r2 = R_seq(mean_fit,mean_CNIH2_density[l1])
+    r2_exp = ChiSq(mean_CNIH2_density[l1], mean_fit_exp, sem_CNIH2_density[l1])
+    r2_e1 = ChiSq(d1, mean_fit_e1, sem1)
+    r2_e2 = ChiSq(d2, mean_fit_e2, sem2)
+    ax1[ldx].plot(x_range, mean_fit_exp, 'r--', label=r"exp-fit,$\chi^2 = %.2f$" % r2_exp)
+    ax1[ldx].plot(x1, mean_fit_e1, 'g-', label=r"exp1-fit,$\chi^2 = %.2f$" % r2_e1)
+    ax1[ldx].plot(x2, mean_fit_e2, 'k-', label=r"exp2-fit,$\chi^2 = %.2f$" % r2_e2)
+    # ax1[ldx].plot(x_range+bin_size/2,mean_fit_exp,'g--',label=r"line-fit,$R^2 = %.2f$" % r2)
+    f_size = 12
+    loc = "upper right"
+    # print(pearsonr(mean_Glua2_density[l1],mean_CNIH2_density[l1]))
+    # ax3.errorbar(x_100,mean_int_density,sem_int_density,color=COLORS_dict["shaft_i"],label="GluA2")
+    ax1[ldx].set_ylabel("Normalized CNIH2 fluorescent", size=f_size)
+    ax1[ldx].set_xlabel(r"Dendritic distance in $\mu m$, N={}".format(CNIH2_length_data[l1].shape[0]), size=f_size)
+    ax1[ldx].set_title("Dendritic distribution of GFP normalized CNIH2 density", size=f_size)
+    ax1[ldx].legend(fontsize=f_size, loc=loc)
+    ax1[ldx].set_xlim([-1, l1])
+    # ax1[ldx].yaxis.tick_right()
+plt.tight_layout()
+plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_density_Dend_dist_CNIH2_fitted"))
+plt.show()
