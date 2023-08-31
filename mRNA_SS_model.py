@@ -79,7 +79,7 @@ class mRNA_model():
     
     def SolveNumerical(self):
         y = np.zeros((2,self.x_grid.size))
-        soln = solve_bvp(self.fun, self.bc, self.x_grid, y,max_nodes=1e+9, verbose=0,tol=1e-3, bc_tol=1e-8)
+        soln = solve_bvp(self.fun, self.bc, self.x_grid, y,max_nodes=int(model_L/delta_x), verbose=0,tol=1e-3, bc_tol=1e-8)
         # breakpoint()
         r_dist = soln.y[0]
         dr_dist = soln.y[1]

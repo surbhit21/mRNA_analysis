@@ -37,7 +37,7 @@ class Protein_model():
         function that defines the darivatives
         """
         p, dp = y
-        print(y.shape)
+        # print(y.shape)
         return [
             dp,
             (self.v_P * dp + self.k_P * p - self.beta_p * self.r_dist[0:dp.shape[0]]) / self.D_P
@@ -52,7 +52,7 @@ class Protein_model():
 
     def SolveNumericalProtein(self):
         y = np.zeros((2, self.x_grid.size))
-        soln = solve_bvp(self.fun_protein, self.bc_protein, self.x_grid, y, max_nodes=1e+9, verbose=0, tol=1e-3, bc_tol=1e-8)
+        soln = solve_bvp(self.fun_protein, self.bc_protein, self.x_grid, y, max_nodes=int(model_L/delta_x), verbose=0, tol=1e-3, bc_tol=1e-8)
         # breakpoint()
         p_dist = soln.y[0]
         dp_dist = soln.y[1]
@@ -66,12 +66,12 @@ class Protein_model():
 
 def RunSSProtein(D_P, v_P):
     x_grid,r_dist = RunSS(0.23,0)
-    protein_ss = Protein_model(D_P, v_P, 11, 0.001, 1,r_dist,0.012)
+    protein_ss = Protein_model(D_P, v_P, 2, 0.001, 0.001,r_dist,delta_x)
     x_grid, p_dist = protein_ss.SolveNumericalProtein()
-    # return x_grid, p_dist
-    plt.plot(protein_ss.x_grid, r_dist / r_dist[0],label="mRNA")
-    plt.plot(protein_ss.x_grid,p_dist/p_dist[0],label="Protein")
-    plt.legend()
-    plt.show()
-
-RunSSProtein(.1,0)
+    return x_grid, p_dist
+    # plt.plot(protein_ss.x_grid, r_dist / r_dist[0],label="mRNA")
+    # plt.plot(protein_ss.x_grid,p_dist/p_dist[0],label="Protein")
+    # plt.legend()
+    # plt.show()
+#
+# RunSSProtein(10**0.9999996,10**-2.45334484)

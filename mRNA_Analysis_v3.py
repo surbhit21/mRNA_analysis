@@ -479,9 +479,9 @@ class PlottingWidgetmRNA(SNSPlottingWidget):
     #     else:
     #         print("Plots not saved")
     #     plt.show()
-    def SaveFigures(self,filename,ext_list = [".png",".svg",".pdf"]):
-        for ext in ext_list:
-            plt.savefig(filename+ext,dpi=300)
+    # def SaveFigures(self,filename,ext_list = [".png",".svg",".pdf"]):
+    #     for ext in ext_list:
+    #         plt.savefig(filename+ext,dpi=300)
             
    
 
@@ -520,10 +520,10 @@ if __name__ == '__main__':
         parsing argumenst on mRNA and widths to be analysed. Each length is analysed seperately. mRNAs can be analysed in combinations
     """
     parser = argparse.ArgumentParser(description='mRNA analysis.py file ')
-    parser.add_argument('-m', "--mRNA", nargs="+", default = ["CNIH2"],
+    parser.add_argument('-m', "--mRNA", nargs="+", default = ["all"],
                         help='mRNA names to analyse works for Gria1, Gria2, CNIH2 or any combination, if all is given all four will be plotted togather. Comparison \
                             is always made against CMAKII mRNA')
-    parser.add_argument('-w', "--width", nargs="+", default = ['10'],
+    parser.add_argument('-w', "--width", nargs="+", default = ['5.0'],
                         help='dendritic width, allowed values: 5.0, 10, 15.0 or any combination')
     
     # reading the argumenst
@@ -559,7 +559,7 @@ if __name__ == '__main__':
     
     in_set = 1  #plot in_set normalized plots ?
     save_it = 1 #save the plots or not (=1 for yes)
-    ax_label = 0 #plot axis labels or not (=1 for yes)
+    ax_label = 1 #plot axis labels or not (=1 for yes)
     
     #  calculating fractions for total in soma and dendrites
     fractions, total_cell_counts = GetSomaticDendriticFraction(soma_cell_stat,dend_cell_stat)
@@ -575,7 +575,7 @@ if __name__ == '__main__':
     colors = []
     compartment = ["Soma","Dendrite"]
     x_lab,y_lab = ["mRNA","Fraction of mRNA in Soma Vs. dendrites"]
-    title = "Quatification of Dendritic and Somatic mRNA copy-number";
+    title = "mRNA localization dendrite vs somata";
     
     # breakpoint()
     # setting up the data,labels, colors to plot in the correct format
@@ -673,12 +673,12 @@ if __name__ == '__main__':
     MAP2_nrom_stds = {}
     MAP2_norm_sems = {}
     # breakpoint()
-    count_fittings = [0,0,0,1,0]
+    count_fittings = [0,0,0,0,0]
     norm_fittings = [0,0,0,2,0 ]
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
             labs = [mrna,channel_3_mRNA]
-            x_lab,y_lab,y_lab_norm = ["Dendritic distance (in microns)",'mRNA puncta density',"Normalized \n mRNA count"]
+            x_lab,y_lab,y_lab_norm = ["Distance from soma(in microns)",'mRNA puncta density',"Normalized \n mRNA density"]
             title = "Spatial distribution of mRNA copy-number"
             file_prefix = "Spatial_mRNA_distribution"
             plot_colors = [mRNA_COLOR_code[mrna],mRNA_COLOR_code[channel_3_mRNA]]
@@ -693,7 +693,7 @@ if __name__ == '__main__':
                     MAP2_norm_stds = np.zeros(means.shape)
                     norm_density_mean = np.zeros(means.shape)
                     norm_density_std = np.zeros(means.shape)
-                    
+
                     means[0] = dend_sum_norm_distribution_dict[width][mrna][l1][:,:,stat_no].mean(axis=0)[1:xs.shape[0]+1]
                     stds[0] = dend_sum_norm_distribution_dict[width][mrna][l1][:,:,stat_no].std(axis=0)[1:xs.shape[0]+1]
                     
@@ -732,6 +732,7 @@ if __name__ == '__main__':
                 # pw.PlotFittedCurves(xs, MAP2_norm_data, MAP2_norm_data_camKII, labs, x_lab, y_lab, y_lab_norm,plot_colors,title+"_curve_fit", op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                 #                   ,bin_size,save_it = save_it,set_axis_label=ax_label,exp_method="NormE")
                 # #
+
                 pw.PlotBinnedStats(np.asarray([xs,xs]), MAP2_norm_means, MAP2_norm_stds,norm_density_mean, labs, x_lab, y_lab, y_lab_norm,plot_colors,title, op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                                   ,bin_size,save_it = save_it,fit_exp=count_fittings[ldx],in_set=in_set,set_axis_label=ax_label,exp_method="1E")
                 # breakpoint()

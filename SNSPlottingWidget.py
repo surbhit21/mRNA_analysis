@@ -6,13 +6,14 @@ Created on Tue Aug  2 11:22:33 2022
 @author: surbhitwagle
 """
 import matplotlib.pyplot as plt
-
+from CNIH2_protein_model_fitting import FitModelProtein
 from Fonkeu_et_al_2019 import GetmRNADist
 import pandas as pd
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib import rc
 from matplotlib.pyplot import setp
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mRNA_model_fitting import *
 import numpy as np
 from pathlib import Path
@@ -101,22 +102,28 @@ class SNSPlottingWidget():
         fig, ax = plt.subplots()
         # ax.plot(xs[0],np.zeros(xs[0].shape),'k--',label='=0' ,markersize=4*lw)
         if in_set ==1:
-            left, bottom, width, height = [0.35, 0.7, 0.2, 0.2]
-            ax2 = fig.add_axes([left, bottom, width, height])
+            left, bottom, width, height = [0.35, 0.75, 0.2, 0.2]
+            # ax2 = fig.add_axes([left, bottom, width, height])
+            # ax2.set_ylabel(ylab_norm)
+            ax2 = ax.inset_axes(bounds = [left,bottom,width,height],zorder=4)#, width=3, height=2, loc="upper center")
             ax2.set_ylabel(ylab_norm)
+            ax2.yaxis.tick_right()
         if xs.shape[0] == means.shape[0]:
             # breakpoint()
+
+            if in_set == 1:
+                for i in range(xs.shape[0]):
+                    ax2.plot(xs[i], MAP2_norm[i]   , color=color[i], marker='o', markersize=4, linestyle='dashed')
             for i in range(xs.shape[0]):
-               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' )
+               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' ,zorder=6)
                
-               if in_set==1:
-                   ax2.plot(xs[i],MAP2_norm[i],color=color[i],marker='o',markersize=4,linestyle='dashed')
+
             if set_axis_label == 1:
                 ax.set_xlabel(xlab)
                 ax.set_ylabel(ylab)
             
             folder = "."
-            
+            # breakpoint()
             if fit_exp == 1:
                 for i in range(xs.shape[0]):
                     # breakpoint()
@@ -134,7 +141,19 @@ class SNSPlottingWidget():
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
                             label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
-            ax.set_xlim([-bin_size,xs[0,-1]+bin_size])
+            elif fit_exp == 3:
+
+                for i in range(xs.shape[0]):
+                    # breakpoint()
+                    print("fitting Fonkeu model for {}".format(labs[i]))
+                    x1,yi_fit,chi_squ,paras,mini,out2 = FitModelProtein( xs[i], means[i],stds[i,:])
+                    # breakpoint()
+                    # chi_squ = ChiSq(means[i],yi_fit,stds[i])
+                    ax.plot(x1, yi_fit, marker='None', c=color[i],
+                            label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
+            ax.set_xlim([-1,xs[0,-1]+bin_size])
+            if in_set==1:
+                ax.set_ylim([-2,means.max()+10])
             # plt.show()
             fig.tight_layout()
             ax.legend()

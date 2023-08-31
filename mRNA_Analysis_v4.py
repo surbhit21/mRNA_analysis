@@ -535,9 +535,9 @@ class PlottingWidgetmRNA(SNSPlottingWidget):
         else:
             print("Plots not saved")
         plt.show()
-    def SaveFigures(self,filename,ext_list = [".png",".svg",".pdf"]):
-        for ext in ext_list:
-            plt.savefig(filename+ext,dpi=300)
+    # def SaveFigures(self,filename,ext_list = [".png",".svg",".pdf"]):
+    #     for ext in ext_list:
+    #         plt.savefig(filename+ext,dpi=300)
             
    
 

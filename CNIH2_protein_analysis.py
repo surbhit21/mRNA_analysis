@@ -1,3 +1,4 @@
+from CNIH2_protein_model_fitting import *
 import csv
 from functools import reduce
 import json
@@ -708,7 +709,7 @@ y_bg_param = stat1+"-bg"
 # plt_widget.CorrelationCalculationAndPlotting(CNIH2_df,"CNIH2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_CNIH2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
 
 
-to_analyse = Lengths[1:-2]
+to_analyse = Lengths[-5:-3]
 fig,ax2 = plt.subplots(figsize=(8,6*len(to_analyse)),ncols=1,nrows=len(to_analyse))
 # lta = 100
 for ldx,l1 in enumerate(to_analyse):
@@ -743,18 +744,18 @@ for ldx, l1 in enumerate(to_analyse):
     print(x1,x2)
     sem1, sem2 = np.split(sem_CNIH2_density[l1], [bp])
     popt_e1, pcov_e1 = curve_fit(exp_fit, x1, d1)
-    popt_e2, pcov_e2 = curve_fit(exp_fit, x2, d2)
+    x3,yi_fit,chi_squ,paras,mini,out2 = FitModelProtein(x2,d2/d2[0],sem2)#curve_fit(exp_fit, x2, d2)
     # print(popt_e1, popt_e2, popt_e)
     mean_fit_e1 = exp_fit(x1, *popt_e1)
-    mean_fit_e2 = exp_fit(x2, *popt_e2)
+    # mean_fit_e2 = exp_fit(x2, *popt_e2)
     mean_fit_exp = exp_fit(x_range, *popt_e)
     # r2 = R_seq(mean_fit,mean_CNIH2_density[l1])
     r2_exp = ChiSq(mean_CNIH2_density[l1], mean_fit_exp, sem_CNIH2_density[l1])
     r2_e1 = ChiSq(d1, mean_fit_e1, sem1)
-    r2_e2 = ChiSq(d2, mean_fit_e2, sem2)
+    # r2_e2 = ChiSq(d2, mean_fit_e2, sem2)
     ax1[ldx].plot(x_range, mean_fit_exp, 'r--', label=r"exp-fit,$\chi^2 = %.2f$" % r2_exp)
     ax1[ldx].plot(x1, mean_fit_e1, 'g-', label=r"exp1-fit,$\chi^2 = %.2f$" % r2_e1)
-    ax1[ldx].plot(x2, mean_fit_e2, 'k-', label=r"exp2-fit,$\chi^2 = %.2f$" % r2_e2)
+    ax1[ldx].plot(x3+x2[0], d2[0]*yi_fit, 'k-', label=r"exp2-fit,$\chi^2 = %.2f$" % chi_squ)
     # ax1[ldx].plot(x_range+bin_size/2,mean_fit_exp,'g--',label=r"line-fit,$R^2 = %.2f$" % r2)
     f_size = 12
     loc = "upper right"
@@ -767,5 +768,23 @@ for ldx, l1 in enumerate(to_analyse):
     ax1[ldx].set_xlim([-1, l1])
     # ax1[ldx].yaxis.tick_right()
 plt.tight_layout()
-plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_density_Dend_dist_CNIH2_fitted"))
+plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_density_Dend_dist_CNIH2_exp_fitted"))
 plt.show()
+
+l1 = 100
+x_range = np.arange(0,l1,bin_size)
+cnih2_mean = mean_CNIH2[l1]
+cnih2_sem = sem_CNIH2_density[l1]
+cnih2_m_den = mean_CNIH2_density[l1]
+
+plt_widget.PlotBinnedStats(np.asarray([x_range]), np.asarray([cnih2_m_den]), np.asarray([sem_CNIH2_density[l1]]),
+                           np.asarray([cnih2_m_den]), ["cnih2"], x_lab, y_lab, ["Norm CNIH2 density"], ["#DDA15E"],"",
+                           op_folder+"_norm__with_CNIH2_ss_mode_fit",
+                                    bin_size,save_it = 0,fit_exp=3,in_set=0,set_axis_label=0)
+                #
+plt_widget.PlotBinnedStats(np.asarray([x_range]), np.asarray([cnih2_m_den]), np.asarray([sem_CNIH2_density[l1]]),
+                           np.asarray([cnih2_m_den]), ["cnih2"], x_lab, y_lab, ["Norm CNIH2 density"], ["#DDA15E"],"",
+                           op_folder+"_norm__with_CNIH2_ss_mode_fit",
+                                    bin_size,save_it = 0,fit_exp=1,in_set=0,set_axis_label=0,exp_method="2E")
+
+

@@ -27,7 +27,7 @@ from statannotations.Annotator import Annotator
 
 scale_GluA2_protein = 0.24034
 Lengths = np.array([25,50,75,100,150,250])
-bin_size = 2.5
+bin_size = 3
 bins = np.arange(0, Lengths.max(), bin_size)
 COLORS = ["#005f73","#9b2226","#CA6702","#337357"]
 COLORS_dict = {"spine":"#005f73","shaft":'#CA6702',"spine_s":"#005f73","spine_i":'#CA6702',"shaft_s":"#005f73","shaft_i":'#CA6702'}
@@ -128,11 +128,11 @@ class GluA2DataAnalysis():
                         The mean of the background roi is reduced from the roi data
                     """
                     corrected_int_data = int_data
-                    # corrected_int_data[:, 1] -= int_bg_data[:, 1].mean()  # - int_bg_data[:,-1]
+                    corrected_int_data[:, 1] -= int_bg_data[:, 1].mean()  # - int_bg_data[:,-1]
                     corrected_surf_data = surf_data
-                    # corrected_surf_data[:, 1] -= surf_bg_data[:, 1].mean()  # - surf_bg_data[:,-1]
+                    corrected_surf_data[:, 1] -= surf_bg_data[:, 1].mean()  # - surf_bg_data[:,-1]
                     corrected_gfp_data = gfp_data
-                    # corrected_gfp_data[:, 1] -= gfp_bg_data[:, 1].mean()  # - gfp_bg_data[:,-1]
+                    corrected_gfp_data[:, 1] -= gfp_bg_data[:, 1].mean()  # - gfp_bg_data[:,-1]
 
                     # binning the data for all three channels
                     corrected_binned_surf_data = self.BinnedSum(corrected_surf_data, bins, 0, idx)
@@ -479,10 +479,21 @@ for ldx,l1 in enumerate(to_analyse):
     ax1[ldx].set_title("Dendritic distribution of surface to internal fluorescent intesity ratio",size=f_size)
     ax1[ldx].legend(fontsize=f_size,loc=loc)
     ax1[ldx].set_xlim([-1,l1+1])
-    # ax1[ldx].set_ylim([0,0.6])
+
+    # ax1[ldx].set_ylim([0.3,0.6])
 plt.tight_layout()
 plt_widget.SaveFigures(os.path.join(op_folder,"Surface_to_internal_glua2_ratio_exp_fitted"))
 plt.show()
+
+l1 = 100
+x_range = np.arange(0,l1,bin_size)
+ratio_mean = ratio_int_surf[l1].mean(axis=0)[off_set:x.shape[0]+off_set]
+ratio_std = ratio_int_surf[l1].std(axis=0)[off_set:x.shape[0]+off_set]
+ratio_sem = ratio_std/np.sqrt(ratio_int_surf[l1].shape[0])
+plt_widget.PlotBinnedStats(np.asarray([x_range]), np.asarray([ratio_mean/ratio_mean[0]]), np.asarray([ratio_sem]),
+                           np.asarray([ratio_mean]), ["cnih2"], x_lab, y_lab, ["Norm CNIH2 density"], ["#DDA15E"],"",
+                           op_folder+"_norm__with_CNIH2_ss_mode_fit",
+                                    bin_size,save_it = 0,fit_exp=3,in_set=0,set_axis_label=0)
 
 
 fig,ax2 = plt.subplots(figsize=(8,6*len(to_analyse)),ncols=1,nrows=len(to_analyse))
@@ -492,14 +503,23 @@ for ldx,l1 in enumerate(to_analyse):
     x=  np.arange(0, l1, bin_size)
     ax2[ldx].errorbar(x+bin_size/2,mean_surf[l1],sem_surf[l1],color=COLORS_dict["shaft_s"],label="surface",marker='s',linestyle="-")
     ax2[ldx].errorbar(x+bin_size/2,mean_int[l1],sem_int[l1],color=COLORS_dict["shaft_i"],label="internal",marker='o',linestyle="--")
-    ax2[ldx].errorbar(x+bin_size/2,mean_GFP[l1],sem_GFP[l1],label = "GFP",color="green",marker='8',linestyle="-." )
+    # ax2[ldx].errorbar(x+bin_size/2,mean_GFP[l1],sem_GFP[l1],label = "GFP",color="green",marker='8',linestyle="-." )
     ax2[ldx].set_ylabel("Normalized fluorescence [a.b.u]",fontsize=14)
+
     ax2[ldx].set_xlabel(r"Dendritic distance in $\mu m$, N= {}".format(int_glua2_data[l1].shape[0]),fontsize=14)
     ax2[ldx].set_title("Dendritic distribution of normalized fluorescence intensity",fontsize=14)
     ax2[ldx].legend()
     # ax2[1].legend()
-    ax2[ldx].set_xlim([-1,l1])
+    ax2[ldx].set_xlim([-1,l1+2])
+
     # ax2[1].set_xlim([-4,100])
 plt.tight_layout()
 plt_widget.SaveFigures(os.path.join(op_folder,"Glua2_normalized_fluorescent_intensity"))
 plt.show()
+
+
+"""
+Fitting the AMPA GLuA2 model to the normalized fluorescent intensity 
+"""
+
+length_to_fit = 100 #fitting the 100 micron long data
