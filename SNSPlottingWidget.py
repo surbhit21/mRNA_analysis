@@ -26,7 +26,7 @@ import scikit_posthocs as sp
 Parent class for All plotting stuff
 """
 class SNSPlottingWidget():
-    def __init__(self,fsize=16,tsize=25,fam='serif',pixelden = 100,lw=3.0,width=10,height=8):
+    def __init__(self,fsize=18,tsize=25,fam='serif',pixelden = 100,lw=3.0,width=10,height=8):
         rc('font',
             family=fam,
             size=fsize)
@@ -42,13 +42,16 @@ class SNSPlottingWidget():
     
         rc('axes', 
             # linewidth=lw,
-            titlesize=20,
+            titlesize=fsize,
             titleweight='regular',
             labelsize=fsize,
             )
     
         rc('legend',
+           loc='best',
+           frameon=False,
             fontsize=fsize)
+        rc('legend.frameon')
         rc('xtick',
            labelsize=fsize)
         rc('ytick',
@@ -77,7 +80,7 @@ class SNSPlottingWidget():
         rc('lines',
            linewidth=lw,
            markersize=4*lw)
-    
+        self.fsize = fsize
     def CreateFolderRecursive(self,folder):
         """
             function creates folders upto  a path recursively
@@ -91,58 +94,95 @@ class SNSPlottingWidget():
             required arguments:
                 filename
         """
+        plt.tight_layout()
         for ext in ext_list:
             plt.savefig(filename+ext,dpi=dpi)
-        
-    def PlotBinnedStats(self,xs,means,stds,MAP2_norm,labs,xlab,ylab,ylab_norm,color,title_string,file_name,bin_size,save_it = 1,fit_exp =1,auto_close=1,in_set=1,lw=3.0,set_axis_label=1,exp_method = "NormE"):
+
+    def getclosestindex(self,arr, per):
+        total = np.sum(arr)
+        perc = total*per/100
+
+        for i in range(0,len(arr)):
+            perc -= arr[i]
+            if perc <= 0:
+                return i
+        return len(arr)-1
+    def PlotBinnedStats(self,xs,means,stds,MAP2_norm,labs,xlab,ylab,ylab_norm,color,title_string,file_name,bin_size,save_it = 1,fit_exp =1,auto_close=1,in_set=1,lw=3.0,set_axis_label=1,exp_method = "2E"):
         """
             function to plot binned statistics
             
         """
         fig, ax = plt.subplots()
+        ax.tick_params(axis='both', which='major', labelsize=self.fsize)
+        # ax.set_ylim([0,1.5])
+        ax.spines[['right', 'top']].set_visible(False)
         # ax.plot(xs[0],np.zeros(xs[0].shape),'k--',label='=0' ,markersize=4*lw)
-        if in_set ==1:
-            left, bottom, width, height = [0.35, 0.75, 0.2, 0.2]
-            # ax2 = fig.add_axes([left, bottom, width, height])
-            # ax2.set_ylabel(ylab_norm)
-            ax2 = ax.inset_axes(bounds = [left,bottom,width,height],zorder=4)#, width=3, height=2, loc="upper center")
-            ax2.set_ylabel(ylab_norm)
-            ax2.yaxis.tick_right()
+        # if in_set ==1:
+        #     left, bottom, width, height = [0.25, 0.75, 0.2, 0.2]
+        #     # ax2 = fig.add_axes([left, bottom, width, height])
+        #     # ax2.set_ylabel(ylab_norm)
+        #     ax2 = ax.inset_axes(bounds = [left,bottom,width,height],zorder=4)#, width=3, height=2, loc="upper center")
+        #     ax2.set_ylabel(ylab_norm)
+        #     ax2.yaxis.tick_right()
         if xs.shape[0] == means.shape[0]:
             # breakpoint()
 
-            if in_set == 1:
-                for i in range(xs.shape[0]):
-                    ax2.plot(xs[i], MAP2_norm[i]   , color=color[i], marker='o', markersize=4, linestyle='dashed')
+            # if in_set == 1:
+            #     for i in range(xs.shape[0]):
+            #         ax2.plot(xs[i], MAP2_norm[i] , color=color[i], marker='o', markersize=4, linestyle='dashed')
             for i in range(xs.shape[0]):
                ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' ,zorder=6)
-               
-
+               # per = 75
+               # i_close = self.getclosestindex(means[i],per)
+               # ax.vlines(x=xs[i,i_close],ymin=0,ymax=(means+stds).max(),
+               #           color=color[i],linestyle="-")
+               # print(i_close)
             if set_axis_label == 1:
                 ax.set_xlabel(xlab)
                 ax.set_ylabel(ylab)
-            
+
             folder = "."
             # breakpoint()
             if fit_exp == 1:
+                left, bottom, width, height = [0.3,0.75,0.2,0.2]
+                tics = np.arange(0,1.2,0.5)
+                ax3 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)
+                ax3.set_ylabel("Normalized \n fits")
+                ax3.yaxis.tick_right()
+                ax3.set_ylim([0,1.1])
+                ax3.set_yticks(tics)
                 for i in range(xs.shape[0]):
                     # breakpoint()
                     yi_fit,chi_squ = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
                     # breakpoint()
-                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
-
+                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2_\nu$ = {:.2f}".format(chi_squ))
+                    ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
             elif fit_exp == 2:
-
+                j_r_factors = [1,10]
+                left, bottom, width, height = [0.3, 0.75, 0.2, 0.2]
+                ax3 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)
+                ax3.set_ylabel("Normalized \n fits")
+                ax3.yaxis.tick_right()
+                ax3.set_ylim([0, 1.1])
+                tics = np.arange(0, 1.2, 0.5)
+                ax3.set_yticks(tics)
                 for i in range(xs.shape[0]):
                     # breakpoint()
                     print("fitting Fonkeu model for {}".format(labs[i]))
-                    x1,yi_fit,chi_squ,paras,mini,out2 = FitModel( xs[i], means[i],stds[i,:])
-                    # breakpoint()
+                    x1,yi_fit,chi_squ,paras,mini,out2 = FitModel( xs[i], means[i],stds[i,:],j_r_fcator=j_r_factors[i])
+                    breakpoint()
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
                             label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
+                    ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
             elif fit_exp == 3:
-
+                # left, bottom, width, height = [0.3, 0.75, 0.2, 0.2]
+                # ax3 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)
+                # ax3.set_ylabel("Normalized \n fits")
+                # ax3.yaxis.tick_right()
+                # ax3.set_ylim([0, 1.1])
+                # tics = np.arange(0, 1.2, 0.5)
+                # ax3.set_yticks(tics)
                 for i in range(xs.shape[0]):
                     # breakpoint()
                     print("fitting Fonkeu model for {}".format(labs[i]))
@@ -151,7 +191,8 @@ class SNSPlottingWidget():
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
                             label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
-            ax.set_xlim([-1,xs[0,-1]+bin_size])
+                    # ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
+
             if in_set==1:
                 ax.set_ylim([-2,means.max()+10])
             # plt.show()
@@ -167,8 +208,8 @@ class SNSPlottingWidget():
                 plt.close()
         else:
             print("Not same number of xs and means",xs.shape,means.shape)
-    
-    def PlotBinnedStats1p(self,xs,means,stds,MAP2_norm,labs,xlab,ylab,ylab_norm,color,title_string,file_name,bin_size,save_it = 1,fit_exp =1,auto_close=1,in_set=1,lw=3.0,set_axis_label=1,exp_method = "NormE"):
+
+    def PlotBinnedStats1p(self,xs,means,stds,MAP2_norm,labs,xlab,ylab,ylab_norm,color,title_string,file_name,bin_size,save_it = 1,fit_exp =1,auto_close=1,in_set=1,lw=3.0,set_axis_label=1,exp_method = "2E"):
         """
             function to plot binned statistics
             
@@ -306,13 +347,18 @@ class SNSPlottingWidget():
             print("Not same length of xs and means",xs.shape,data1.shape)
     def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1):
         fig, ax = plt.subplots()
+        ax.spines[['right', 'top']].set_visible(False)
+        # y_range = [0.0,0.2,0.4,0.6,0.8,1]
+        # ax.set_yticklabels(y_range)
+        # ax.set_ylim([0, 1])
+        # ax.spines.left.set_bounds((-0.02,1))
         num_plots = int(fractions.shape[0]/groups)
         pos = np.linspace(1,2,groups)
         # breakpoint()
         x_points = []
         pairs = [] 
         x_tics = []
-
+        ax.tick_params(axis='both', which='major', labelsize=self.fsize)
         for i in range(num_plots):
             bp1 = ax.boxplot(fractions[groups*i],widths = 0.5,positions=[i*(groups+1)+pos[0]],showfliers=False,labels=[compartment[0]])
             bp2 = ax.boxplot(fractions[groups*i+groups-1],widths = 0.5,positions=[i*(groups+1)+pos[1]],showfliers=False,labels=[compartment[1]],patch_artist=True, )
@@ -364,10 +410,11 @@ class SNSPlottingWidget():
         else:
             print("Plots not saved")
         plt.show()
-    
+
     def ViolinPlotStats(self,data,labs,xlab,ylab,colors,title_string,file_name,molecules,save_it = 1,set_axis_label=1):
         fig, ax = plt.subplots()
-        
+        ax.spines[['right', 'top']].set_visible(False)
+        ax.tick_params(axis='both', which='major', labelsize=self.fsize)
         # ax.set_axis_style([lab1,lab2])
         # labels=[lab1+"\n N=%d cells"%(data1.shape[0]),lab2+"\n N=%d cells"%(data2.shape[0])]
         num_plots = data.shape[0]
@@ -410,7 +457,7 @@ class SNSPlottingWidget():
             ax.set_ylabel(ylab)
         # stat,p_val = kruskal(data1, data2)
         plt.title(title_string)#+"\n stat = %0.2e, p-value = %0.2e")%(stat,p_val),fontsize=fsize)
-        fig.tight_layout()
+        # fig.tight_layout()
         folder = "."
         if save_it == 1:
             self.SaveFigures(file_name)
@@ -423,8 +470,9 @@ class SNSPlottingWidget():
         # print(x,y,txt)
         if not txt == '':
             fac = np.abs(x2-x1)*0.04
-            plt.plot([x1,x1, x2,x2], [y+fac, y+h+fac, y+h+fac, y+fac], lw=1.5, c=color)
-            plt.text((x1+ x2)*0.5,y+h+fac,txt, ha=ha, va=va, color=color)
+            trans = ax.get_xaxis_transform()
+            plt.hlines(xmin=x1,xmax=x2, y = y+fac, lw=1.5, color=color)#, transform=trans)
+            plt.text((x1+ x2)*0.5,y+h+fac,txt, ha=ha, va=va, color=color)#,transform=trans )
         
     def setBoxColors(self,bp,c,a=1,flipped=False):
         setp(bp['boxes'], color=c,alpha=a)

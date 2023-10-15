@@ -40,7 +40,7 @@ def FitModelProtein(x, data, sigmas, pars=[]):
     else:
         fit_paramas = pars
 
-    resudual(fit_paramas, x, data)
+    resudual(fit_paramas, x, data[1:])
     mini = Minimizer(resudual, params=fit_paramas, fcn_kws={'x': x, 'data': data})
     out2 = mini.minimize(method='leastsq')
     report_fit(out2.params)
@@ -50,7 +50,7 @@ def FitModelProtein(x, data, sigmas, pars=[]):
 
 def resudual(paras, x=None, data=None):
     print(".",end="")
-    r_needed = GetRequiredDist(paras, x, data)
+    r_needed = GetRequiredDist(paras, x, data,off_set=1)
     resd = data - r_needed
     return resd  # resd.flatten()
 
@@ -68,10 +68,10 @@ def resudual(paras, x=None, data=None):
 #         op_matrix.append(GetSlidingWindowMean(d,window_len,mode))
 #     op_matrix = np.asarray(op_matrix)
 #     return op_matrix
-def GetRequiredDist(paras, x, data):
+def GetRequiredDist(paras, x, data,off_set=0):
     x1, r_dist = GetParamAndModelDist(paras)
     # breakpoint()
-    r_binned = BinnedSum(np.column_stack((x1, r_dist)), bins, 0)[1:data.shape[0] + 1, 1]
+    r_binned = BinnedSum(np.column_stack((x1, r_dist)), bins, 0)[1+off_set:data.shape[0] + 1+off_set, 1]
     # taking the first N bins
     r_needed = r_binned[0:x.shape[0]]
 
@@ -94,7 +94,7 @@ def GetParamAndModelDist(paras):
 def FittedCalculation(paras, x, data, sigmas, mini, out2):
     x1, r_dist = GetParamAndModelDist(paras)
     # GetParamAndModelDist
-    r_needed = GetRequiredDist(paras, x, data)
+    r_needed = GetRequiredDist(paras, x, data,off_set=1)
     chi_squ = ChiSq(data, r_needed, sigmas)
     # delta_x = paras['dx'].value
     x_n = int(np.ceil(x[-1] / delta_x))

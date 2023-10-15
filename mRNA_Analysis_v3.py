@@ -10,6 +10,7 @@ import json
 import matplotlib.pyplot as plt
 import MAP2_Analysis as mp2a
 import os
+import pandas as pd
 from pathlib import Path
 from SNSPlottingWidget import SNSPlottingWidget
 from Utility import *
@@ -40,7 +41,7 @@ soma_data = {}
 dend_data_meta = {}
 soma_data_meta = {}
 
-mRNA_COLOR_code = {"Gria1":'#606C38',"Gria2":'#283618',"CNIH2":'#DDA15E',"CAMKII":'#BC6C25'}
+mRNA_COLOR_code = {"Gria1":'#606C38',"Gria2":'#283618',"CNIH2":'#DDA15E',"CamK2a":'#BC6C25'}
 
 
 
@@ -539,11 +540,11 @@ if __name__ == '__main__':
     
     
     # setting up analysis paramters
-    bin_size = 5
+    bin_size = 7.5
     soma_bins = np.arange(0,1,bin_size)
     dend_bins = np.arange(0,Lengths.max(),bin_size)
     lengths_to_analyse = Lengths[1:-3]
-    channel_3_mRNA = "CAMKII"
+    channel_3_mRNA = "CamK2a"
     
     # reading all the files necessary for the analysis
     soma_data,dend_data,dend_data_meta,\
@@ -553,7 +554,7 @@ if __name__ == '__main__':
     
     # dend_cell_sum = {}
     
-        
+
     #  pltotting class and setting
     pw = PlottingWidgetmRNA()
     
@@ -579,6 +580,7 @@ if __name__ == '__main__':
     
     # breakpoint()
     # setting up the data,labels, colors to plot in the correct format
+    factions_data = pd.DataFrame
     for width in fractions.keys():
         data_to_show[width] = []
         for mrna in fractions[width].keys():
@@ -594,8 +596,10 @@ if __name__ == '__main__':
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join(mRNA_to_analyse))
         pw.CreateFolderRecursive(op_folder)
         # breakpoint()
-        pw.PlotCellFraction(data_to_show[width],lab1,compartment,x_lab,y_lab,colors,title,op_folder+"soma_vs_dend_fractions_{0}_{1}".format(stats_list[stat_no],width)\
+        pw.PlotCellFraction(data_to_show[width],lab1,compartment,x_lab,y_lab,colors,title,
+                            op_folder+"soma_vs_dend_fractions_{0}_{1}".format(stats_list[stat_no],width)\
                         ,[],save_it = save_it,set_axis_label=ax_label)
+
         
    
     
@@ -673,12 +677,12 @@ if __name__ == '__main__':
     MAP2_nrom_stds = {}
     MAP2_norm_sems = {}
     # breakpoint()
-    count_fittings = [0,0,0,0,0]
-    norm_fittings = [0,0,0,2,0 ]
+    count_fittings = [0,0,0,1,0]
+    norm_fittings = [0,0,0,0,0 ]
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
             labs = [mrna,channel_3_mRNA]
-            x_lab,y_lab,y_lab_norm = ["Distance from soma(in microns)",'mRNA puncta density',"Normalized \n mRNA density"]
+            x_lab,y_lab,y_lab_norm = [r"Distance from soma in $\mu m$",'mRNA puncta density',"Normalized \n mRNA density"]
             title = "Spatial distribution of mRNA copy-number"
             file_prefix = "Spatial_mRNA_distribution"
             plot_colors = [mRNA_COLOR_code[mrna],mRNA_COLOR_code[channel_3_mRNA]]
@@ -732,7 +736,7 @@ if __name__ == '__main__':
                 # pw.PlotFittedCurves(xs, MAP2_norm_data, MAP2_norm_data_camKII, labs, x_lab, y_lab, y_lab_norm,plot_colors,title+"_curve_fit", op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                 #                   ,bin_size,save_it = save_it,set_axis_label=ax_label,exp_method="NormE")
                 # #
-
+                # breakpoint()
                 pw.PlotBinnedStats(np.asarray([xs,xs]), MAP2_norm_means, MAP2_norm_stds,norm_density_mean, labs, x_lab, y_lab, y_lab_norm,plot_colors,title, op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                                   ,bin_size,save_it = save_it,fit_exp=count_fittings[ldx],in_set=in_set,set_axis_label=ax_label,exp_method="1E")
                 # breakpoint()

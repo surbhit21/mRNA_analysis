@@ -9,6 +9,8 @@ Created on Wed Jul 19 10:33:54 2023
 
 
 import matplotlib.pyplot as plt
+import matplotlib 
+matplotlib.use("Qt5Agg")
 from scipy.integrate import solve_bvp
 from Utility import *
 
@@ -93,13 +95,13 @@ def SaveFigures(filename,ext_list = [".png",".svg",".pdf"]):
         plt.savefig(filename+ext,dpi=300)
         
 
-def RunSS(D_R,v_R):
-    mRNA_ss = mRNA_model(D_R, v_R, 0.416, 0.001,0.012 )
+def RunSS(D_R,v_R,Jrin):
+    mRNA_ss = mRNA_model(D_R, v_R, 0.416, Jrin,0.24 )
     x_grid,r_dist = mRNA_ss.SolveNumerical()
-    return x_grid,r_dist
     # plt.plot(mRNA_ss.x_grid,r_dist)
     # plt.show()
-# RunSS(0.1,0.003)
+    return x_grid,r_dist
+# RunSS(0.2,0.0,0.1)
 
 
 

@@ -5,11 +5,11 @@ from scipy.optimize import curve_fit
 from pathlib import Path
 
 # for the numerical integration of mRNA and protein trafficking models
-delta_x = 0.012
+delta_x = 0.24
 model_L = 500
 # possbile lengths for dendritic distributions
 Lengths = np.asarray([2,25,50,75,100,125,150,200,250])
-bin_size = 2.5
+bin_size = 5
 bins = np.arange(0, Lengths.max(), bin_size)
 COLORS = ["#005f73","#9b2226","#CA6702","#337357"]
 COLORS_dict = {"spine":"#005f73","shaft":'#CA6702',"spine_s":"#005f73","spine_i":'#CA6702',"shaft_s":"#005f73","shaft_i":'#CA6702'}
@@ -171,12 +171,11 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         b_init = np.random.uniform(exp_min, exp_max)
         fit_paramas.add('b', b_init, min=exp_min, max=exp_max)
 
-        residuals = Residual(fit_paramas, normExponential, xdata[Fidx:], ydata[Fidx:])
         out2 = minimize(Residual, params=fit_paramas, method='leastsq',
                         args=(normExponential, xdata[Fidx:], ydata[Fidx:]))
         report_fit(out2.params)
         y_fit = normExponential(xdata[Fidx:], out2.params)
-
+        chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 1)
         # breakpoint()
 
     elif ftype == "1E":
@@ -185,13 +184,14 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         b_init = np.random.uniform(exp_min, exp_max)
         fit_paramas.add('a', a_init, min=pref_min, max=pref_max)
         fit_paramas.add('b', b_init, min=exp_min, max=exp_max)
-        residuals = Residual(fit_paramas, oneExponential, xdata[Fidx:], ydata[Fidx:])
         out2 = minimize(Residual, params=fit_paramas, method='leastsq',
                         args=(oneExponential, xdata[Fidx:], ydata[Fidx:]))
+        print("reporting 1E fits ")
         report_fit(out2.params)
         y_fit = oneExponential(xdata[Fidx:], out2.params)
-
+        chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 2)
     elif ftype == "2E":
+        print("fitting 2E")
         a_init = np.random.uniform(pref_min, pref_max)
         b_init = np.random.uniform(exp_min, exp_max)
         c_init = np.random.uniform(pref_min, pref_max)
@@ -200,17 +200,18 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         fit_paramas.add('b', b_init, min=exp_min, max=exp_max)
         fit_paramas.add('c', c_init, min=pref_min, max=pref_max)
         fit_paramas.add('d', d_init, min=exp_min, max=exp_max)
-        residuals = Residual(fit_paramas, twoExponential, xdata[Fidx:], ydata[Fidx:])
         out2 = minimize(Residual, params=fit_paramas, method='leastsq',
                         args=(twoExponential, xdata[Fidx:], ydata[Fidx:]))
+        print("reporting 2E fits ")
         report_fit(out2.params)
         y_fit = twoExponential(xdata[Fidx:], out2.params)
+        chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0]-4)
     else:
         raise NotImplementedError("ftype: {} not implemented, contact author or define it yourself".format(ftype))
 
     # print("fitted "+ ftype, popt)
 
-    chi_squ = out2.chisqr
+
 
     return y_fit, chi_squ
 

@@ -17,24 +17,30 @@ COLORS = ["#005f73","#9b2226","#CA6702","#337357"]
 bin_size = 5
 bins = np.arange(0, Lengths.max(), bin_size)
 
-def FitModel(x,data,sigmas,pars=[]):
+def FitModel(x,data,sigmas,j_r_fcator=1,pars=[]):
     if pars == []:
         fit_paramas = Parameters()
-        np.random.seed(2022)
-        D_R_min = -4.
+        # np.random.seed(2022)
+        D_R_min = 1e-3
         D_R_max = 1.
         D_R_init = np.random.uniform(D_R_min,D_R_max)
-        v_R_min = -10
-        v_R_max = 0.
+        v_R_min = 1e-10
+        v_R_max = 1e-5
         v_R_init = np.random.uniform(v_R_min,v_R_max)
-        
+        J_R_min = 1e-3*j_r_fcator
+        J_R_max = 1*j_r_fcator
+        J_R_init = np.random.uniform(J_R_min, J_R_max)
+        # with open("./mRNAparamsweep_{}.csv".format(molecule), "a") as myfile:
+        #     myfile.write("Initial param values D_r ={}, V_r = {}, Jr = {}\n".format(D_R_init, v_R_init, J_R_init))
+        #     myfile.close()
         #  parameters to fit diffusion and net drift
         fit_paramas.add('D_R',D_R_init,min=D_R_min,max=D_R_max)
         fit_paramas.add('v_R',v_R_init,min=v_R_min,max=v_R_max)
+        fit_paramas.add('J_R', J_R_init, min=J_R_min, max=J_R_max)
         
     else:
         fit_paramas = pars
-    
+    # breakpoint()
     resudual(fit_paramas,x,data)
     mini = Minimizer(resudual,params=fit_paramas,fcn_kws={'x':x, 'data':data})
     out2 = mini.minimize(method='leastsq')
@@ -62,25 +68,30 @@ def resudual(paras,x=None,data=None):
 #         op_matrix.append(GetSlidingWindowMean(d,window_len,mode))
 #     op_matrix = np.asarray(op_matrix)
 #     return op_matrix
-def GetRequiredDist(paras,x,data):
+def GetRequiredDist(paras,x,data,off_set=1):
     
     x1,r_dist = GetParamAndModelDist(paras)
     # breakpoint()
     r_binned = BinnedSum(np.column_stack((x1,r_dist)), bins,0)[1:data.shape[0]+1,1]
     # taking the first N bins
-    r_needed = r_binned[0:x.shape[0]]
-
+    r_needed = r_binned
+    # breakpoint()
     # normalizing with the first bin / same as soma
-    r_norm_needed = r_needed/r_needed[0]
+    r_norm_needed = r_needed
     return r_norm_needed
 
 def GetParamAndModelDist(paras):
     # reading parameters to fit
-    D_R = 10**paras['D_R'].value
-    v_R = 10**paras['v_R'].value
-    
+    D_R = paras['D_R'].value
+    v_R = paras['v_R'].value
+    jrin = paras['J_R'].value
+    # with open("test.txt", "a") as myfile:
+    #     myfile.write("current param values D_r ={}, V_r = {}, Jr = {}\n".format(D_R, v_R, jrin))
+    #     myfile.close()
+
+
     # return model distribution
-    return RunSS(D_R,v_R)
+    return RunSS(D_R,v_R,jrin)
     
 def FittedCalculation(paras,x,data,sigmas,mini,out2):
     x1,r_dist = GetParamAndModelDist(paras)
@@ -89,7 +100,7 @@ def FittedCalculation(paras,x,data,sigmas,mini,out2):
     chi_squ = ChiSq(data,r_needed,sigmas)
     # delta_x = paras['dx'].value
     x_n = int(np.ceil(x[-1]/delta_x))
-    return x1[0:x_n],(r_dist/r_dist[0])[0:x_n],chi_squ,paras,mini,out2
+    return x1[0:x_n],(r_dist)[0:x_n],chi_squ,paras,mini,out2
 
 def R_seq(ydata,y_fit):
     residuals = ydata- y_fit
