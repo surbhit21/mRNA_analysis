@@ -96,12 +96,12 @@ def SaveFigures(filename,ext_list = [".png",".svg",".pdf"]):
         
 
 def RunSS(D_R,v_R,Jrin):
-    mRNA_ss = mRNA_model(D_R, v_R, 0.416, Jrin,0.24 )
+    mRNA_ss = mRNA_model(D_R, v_R, 0.416, Jrin,delta_x )
     x_grid,r_dist = mRNA_ss.SolveNumerical()
     # plt.plot(mRNA_ss.x_grid,r_dist)
     # plt.show()
     return x_grid,r_dist
-# RunSS(0.2,0.0,0.1)
+# RunSS(3.4e-3,2.1e-3,0.003)
 
 
 

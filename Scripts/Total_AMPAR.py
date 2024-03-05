@@ -4,7 +4,6 @@ import numpy as np
 
 matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
-from mRNA_SS_model import *
 from scipy.integrate import solve_bvp
 from Utility import *
 class Protein_model():
@@ -14,28 +13,26 @@ class Protein_model():
 
     """
 
-    def __init__(self, D_P, v_P, half_life_protein, JPin, beta_p,r_dist,dx):
+    def __init__(self, D_P, v_P, half_life_protein, JPin,dx,L):
         self.D_P = D_P
         self.v_P = v_P
         self.t_half_protein = half_life_protein
         self.k_P = np.log(2) / (self.t_half_protein * 24 * 60 * 60);
         self.JPin = JPin
-        self.r_dist = r_dist
-        self.beta_p = beta_p
         self.dx = dx
-        self.x_grid = np.arange(0, model_L, dx)
+        self.L = L
+        self.x_grid = np.arange(0, self.L, dx)
 
-    def sanity_check(self):
-        # breakpoint()
-        assert self.r_dist.shape == self.x_grid.shape       # the mRNA distribution array should be defined on each grid point
+    # def sanity_check(self):
+    #     assert self.r_dist.shape == self.x_grid.shape       # the mRNA distribution array should be defined on each grid point
 
     def GetSSDist(self):
         lambda_r1 = (-self.v_P + np.sqrt(self.v_P ** 2 + (4 * self.D_P * self.k_P))) / (2 * self.D_P)
         lambda_r2 = (-self.v_P - np.sqrt(self.v_P ** 2 + (4 * self.D_P * self.k_P))) / (2 * self.D_P)
-        C1 = (self.JPin * np.exp(-1. * lambda_r2 * model_L)) / (
-                    (self.v_P * self.D_P * lambda_r1) * (np.exp(-1. * lambda_r1 * model_L) - np.exp(-1. * lambda_r2 * model_L)))
-        C2 = (self.JPin * np.exp(-1. * lambda_r1 * model_L)) / (
-                    (self.v_P * self.D_P * lambda_r2) * (np.exp(-1. * lambda_r2 * model_L) - np.exp(-1. * lambda_r1 * model_L)))
+        C1 = (self.JPin * np.exp(-1. * lambda_r2 * self.L)) / (
+                    (self.v_P * self.D_P * lambda_r1) * (np.exp(-1. * lambda_r1 * self.L) - np.exp(-1. * lambda_r2 * self.L)))
+        C2 = (self.JPin * np.exp(-1. * lambda_r1 * self.L)) / (
+                    (self.v_P * self.D_P * lambda_r2) * (np.exp(-1. * lambda_r2 * self.L) - np.exp(-1. * lambda_r1 * self.L)))
         print(lambda_r1, lambda_r2, C1, C2)
 
     def fun_protein(self, x, y):
@@ -46,7 +43,7 @@ class Protein_model():
         # print(y.shape)
         return [
             dp,
-            (self.v_P * dp + self.k_P * p - self.beta_p * self.r_dist[0:dp.shape[0]]) / self.D_P
+            (self.v_P * dp + self.k_P * p) / self.D_P
         ]
 
     def bc_protein(self, ya, yb):
@@ -58,7 +55,7 @@ class Protein_model():
 
     def SolveNumericalProtein(self):
         y = np.zeros((2, self.x_grid.size))
-        soln = solve_bvp(self.fun_protein, self.bc_protein, self.x_grid, y, max_nodes=int(model_L/delta_x), verbose=0, tol=1e-3, bc_tol=1e-8)
+        soln = solve_bvp(self.fun_protein, self.bc_protein, self.x_grid, y, max_nodes=int(self.L/self.dx), verbose=0, tol=1e-3, bc_tol=1e-8)
         # breakpoint()
         p_dist = soln.y[0]
         dp_dist = soln.y[1]
@@ -70,20 +67,12 @@ class Protein_model():
 
 
 
-def RunSSProtein(D_P, v_P):
-    # a,b, = 19.2839368, -0.00891325
-    # fit_paramas = Parameters()
-    # fit_paramas.add('a', a)
-    # fit_paramas.add('b', b)
-    # fit_paramas.add('c', c)
-    # fit_paramas.add('d', d)
+def RunSSProtein(D_P, v_P,x_range = [0,500]):
     Jpin = 0.01
-    beta_p = 0.01
-    x_grid = np.arange(0,model_L,delta_x)
-    x_grid,r_dist = RunSS(3.4e-3,2.1e-3,0.003)
+    dx = 1
     # r_dist = oneExponential(x_grid,fit_paramas)
-    protein_ss = Protein_model(D_P, v_P, 5.6, Jpin, beta_p,r_dist,delta_x)
-    protein_ss.sanity_check()
+    protein_ss = Protein_model(D_P, v_P, 3.12, Jpin,dx,500)
+    # protein_ss.sanity_check()
     x_grid, p_dist = protein_ss.SolveNumericalProtein()
     param_dict = {}
     param_dict["D_P"] = protein_ss.D_P
@@ -91,19 +80,16 @@ def RunSSProtein(D_P, v_P):
     param_dict["half_life_protein"] = protein_ss.t_half_protein
     param_dict["dx"] = protein_ss.dx
     param_dict["JPin"] = protein_ss.JPin
-    param_dict["r_dist"] = protein_ss.r_dist.tolist()
-    param_dict["beta_p"] = protein_ss.beta_p
-    with open("./CNIH2SSModelParamsTemporal.json", "w") as fp:
-        json.dump(param_dict, fp)
-    fp.close()
-    # plt.plot(protein_ss.x_grid, r_dist,label="mRNA")
-    # plt.plot(protein_ss.x_grid,p_dist/p_dist[0],label="Protein")
+    # breakpoint()
+    # with open("./TotalAMPAModelParams.json", "w") as fp:
+    #     json.dump(param_dict, fp)
+    # fp.close()
+    # plt.plot(protein_ss.x_grid,p_dist,label="Glua2")
     # plt.legend()
     # plt.show()
-    return x_grid, p_dist/p_dist[0]
+    return x_grid[x_range[0]//dx:x_range[-1]//dx], p_dist[x_range[0]//dx:x_range[-1]//dx]
 
-#s
-RunSSProtein(1.5,0)
+RunSSProtein(0.1,0.1)
 def RunModelWithFile(param_file):
     with open(param_file, "r") as fp:
         params = json.load(fp)

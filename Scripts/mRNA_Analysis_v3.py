@@ -589,7 +589,7 @@ if __name__ == '__main__':
     for width in fractions.keys():
         data_to_show[width] = []
         for mrna in fractions[width].keys():
-            breakpoint()
+            # breakpoint()
             print(mrna,fractions[width][mrna][:,:,stat_no].shape)
             data_to_show[width].append(fractions[width][mrna][:,0,stat_no])
             data_to_show[width].append(fractions[width][mrna][:,1,stat_no])
@@ -631,7 +631,7 @@ if __name__ == '__main__':
     # calculating the ratio of dendrite to soma mrna count 
     dend_soma_ratio = GetCellWiseRatio(soma_cell_stat,dend_cell_stat)
     
-    breakpoint()
+    # breakpoint()
     # plotting varaible initializing
     x_lab,y_lab = ["mRNA species",'mRNA count ratio (Dendrite/Soma)']
     title = ""#"Ratio between dendritic and somatic mRNA copy-number"

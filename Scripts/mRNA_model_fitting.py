@@ -100,7 +100,7 @@ def FittedCalculation(paras,x,data,sigmas,mini,out2):
     chi_squ = ChiSq(data,r_needed,sigmas)
     # delta_x = paras['dx'].value
     x_n = int(np.ceil(x[-1]/delta_x))
-    return x1[0:x_n],(r_dist)[0:x_n],chi_squ,paras,mini,out2
+    return x1[0:x_n],r_dist[0:x_n],chi_squ,paras,mini,out2
 
 def R_seq(ydata,y_fit):
     residuals = ydata- y_fit

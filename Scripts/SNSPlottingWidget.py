@@ -6,7 +6,7 @@ Created on Tue Aug  2 11:22:33 2022
 @author: surbhitwagle
 """
 import matplotlib.pyplot as plt
-from CNIH2_protein_model_fitting import FitModelProtein
+from protein_model_fitting import FitModelProtein
 from Fonkeu_et_al_2019 import GetmRNADist
 import pandas as pd
 import matplotlib
@@ -170,11 +170,11 @@ class SNSPlottingWidget():
                     # breakpoint()
                     print("fitting Fonkeu model for {}".format(labs[i]))
                     x1,yi_fit,chi_squ,paras,mini,out2 = FitModel( xs[i], means[i],stds[i,:],j_r_fcator=j_r_factors[i])
-                    breakpoint()
+                    # breakpoint()
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
                             label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
-                    ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
+                    ax3.plot(x1,yi_fit/yi_fit[0],c=color[i])
             elif fit_exp == 3:
                 # left, bottom, width, height = [0.3, 0.75, 0.2, 0.2]
                 # ax3 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)

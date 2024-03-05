@@ -84,6 +84,7 @@ def SaveFigures(filename,ext_list = [".png",".svg",".pdf"],dpi=300):
         required arguments:
             filename
     """
+    print("saving as" ,filename)
     for ext in ext_list:
         plt.savefig(filename+ext,dpi=dpi)
 # def Bleach(y, lo, x_sdx):

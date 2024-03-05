@@ -1,4 +1,4 @@
-from CNIH2_protein_model_fitting import *
+from protein_model_fitting import *
 import csv
 from functools import reduce
 import json
@@ -12,7 +12,7 @@ import os
 # from PlottingWidgetAMPA import *
 import pandas as pd
 from pylab import plot, show, savefig, xlim, figure, ylim, legend, boxplot, setp, axes
-
+import Total_AMPAR
 import scikit_posthocs as sp
 from scipy.optimize import curve_fit
 from scipy.stats import ks_2samp, kruskal,spearmanr,pearsonr
@@ -708,24 +708,128 @@ y_bg_param = stat1+"-bg"
 # plt_widget.CorrelationCalculationAndPlotting(Glua2_df,"GluA2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_GluA2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
 # plt_widget.CorrelationCalculationAndPlotting(CNIH2_df,"CNIH2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_CNIH2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
 
-
-to_analyse = Lengths[-5:-3]
-fig,ax2 = plt.subplots(figsize=(8,6*len(to_analyse)),ncols=1,nrows=len(to_analyse))
+fsize = 20
+to_analyse = Lengths[-5:-4]
+fig,ax2 = plt.subplots(figsize=(10,8*len(to_analyse)),ncols=1,nrows=len(to_analyse))
 # lta = 100
+ax2 = [ax2]
+fitted_vals = []
 for ldx,l1 in enumerate(to_analyse):
     x_range =  np.arange(0, l1, bin_size)
-    ax2[ldx].plot(x_range,mean_CNIH2[l1],color=COLORS_dict["shaft_s"],label="CNIH2",marker='s',linestyle="--")
-    ax2[ldx].plot(x_range,mean_MAP2_density[l1],color="r",label="MAP2",marker='o',linestyle="-")
-    ax2[ldx].plot(x_range,mean_Glua2[l1],color=COLORS_dict["shaft_i"],label="GluA2",marker='d',linestyle="-.")
-    ax2[ldx].set_ylabel("Normalized fluorescence",fontsize=14)
-    ax2[ldx].set_xlabel("Dendritic distance in $\mu m$ N = {}".format(CNIH2_length_data[l1].shape[0]),fontsize=14)
-    ax2[ldx].set_title("Dendritic distribution of  normalized fluorescence",fontsize=14)
-    ax2[ldx].legend()
+    # ax2[ldx].plot(x_range,mean_CNIH2_density[l1],color=COLORS_dict["shaft_s"],label="CNIH2",marker='d',linestyle="--")
+    # ax2[ldx].plot(x_range,mean_MAP2_density[l1],color="r",label="MAP2",marker='s',linestyle="-")
+    # ax2[ldx].spines[["right", "top"]].set_visible(False)
+    ax2[ldx].plot(x_range,mean_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="Experimental data",marker='o',markersize=7,linestyle="--",alpha=0.8)
+    # breakpoint()
+
+    x_lit, yi_lit = Total_AMPAR.RunSSProtein(1., 1.45, [0, l1])
+    ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
+                  'g-',
+                  label=r"$D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
+                  format(1., 1.45))
+    x_lit, yi_lit = Total_AMPAR.RunSSProtein(1e-2, 0, [0, l1])
+    ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
+                  'y-',
+                  label=r"$D_p = {:.3f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
+                  format(1e-2, 0))
+    # x_min = x_min[int(0)]
+    x, yi_fit, chi_squ, paras, mini, out2 = FitModelProtein(x_range, mean_Glua2_density[l1] / mean_Glua2_density[l1][0],
+                                                            sem_Glua2_density[l1],
+                                                            molecule="GluA2")  # curve_fit(exp_fit, x2, d2)
+    print(yi_fit[0]-yi_fit[-1])
+    fitted_vals = [10 ** paras['D_P'].value,10 ** paras['v_P'].value]
+    x_lit, yi_fit = Total_AMPAR.RunSSProtein(fitted_vals[0], fitted_vals[1])
+    # breakpoint()
+    ax2[ldx].plot(x_lit,yi_fit/yi_fit[0],
+                  color=COLORS_dict["shaft_i"],
+                  linestyle="-",
+                  label=r"Theory fit: $D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.4f}$ $\mu m/s$".
+                  format(10 ** paras['D_P'].value,10 ** paras['v_P'].value))
+
+    # breakpoint()
+    ax2[ldx].set_ylabel("Normalized density",fontsize=fsize)
+    ax2[ldx].set_xlabel("Length of dendrite ($\mu$m) ",fontsize=fsize)
+    ax2[ldx].set_title("GluA2 protein",fontsize=fsize)
+    ax2[ldx].legend(loc='lower left',fontsize=fsize)
     ax2[ldx].set_xlim([-1,l1])
-    ax2[ldx].set_ylim([0.0,1.6])
-plt.tight_layout()
-plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_dist_CNIH2_GluA2_MAP2"))
+    ax2[ldx].set_ylim([0.0,1.1])
+
+
+    # ax3[ldx].set_xlim([-1, l1])
+    # ax3[ldx].set_ylim([0.0, 1.1])
+#
+# plt.tight_layout()
+plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_dist_GluA2_fitted"))
 plt.show()
+
+def plot_velocity_pmiact(dp,vp,color,fname,prefix="",log=False,y_lim=False,loc="upper right"):
+    fig,ax = plt.subplots(figsize=(10,8),ncols=1,nrows=1)
+    x_lit, yi_lit = Total_AMPAR.RunSSProtein(dp,vp)
+    left, bottom, width, height = [0.4,0.55,0.2,0.2]
+    tics = np.arange(0,1.2,0.5)
+    ax1 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)
+    # ax1.set_title("Normalized \n density")
+    ax1.set_ylabel("Normalized \n protein density")
+    # ax1.set_yticks(tics)
+    ax.set_xlim(x_lit[0],x_lit[-1]+1)
+    x_tics = np.arange(x_lit[0],x_lit[-1],(x_lit[-1]-x_lit[0]+1)//5)
+    # ax.set_xticks(x_tics)
+    ax1.plot(x_lit,yi_lit/yi_lit[0],color=color)
+    ax.plot(x_lit, yi_lit,
+            color=color,
+            linestyle='-',
+            label=r"{}$D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.4f}$ $\mu m/s$".format(prefix,dp,vp))
+
+    ax.set_xlabel("Length of dendrite ($\mu$m) ", fontsize=fsize)
+    ax.set_title("GluA2 protein", fontsize=fsize)
+    ax.set_ylabel("Protein density", fontsize=fsize)
+    ax.legend(loc=loc, fontsize=fsize)
+    if log:
+        plt.yscale("log")
+        ax1.set_yscale("log")
+    if y_lim:
+        ax1.set_ylim([0,1.1])
+    plt_widget.SaveFigures(os.path.join(op_folder,"{}_{}_{}".format(fname,dp,vp)))
+    plt.show()
+
+plot_velocity_pmiact(1.0,1.45,'y',"Normlized_intesity_Dend_dist_GluA2_full_",log=True,loc="upper left")
+plot_velocity_pmiact(1e-2,0,'g',"Normlized_intesity_Dend_dist_GluA2_full_",y_lim=True)
+plot_velocity_pmiact(fitted_vals[0], fitted_vals[1],COLORS_dict["shaft_i"],
+                     "Normlized_intesity_Dend_dist_GluA2_full_",prefix="Theory fit: ",y_lim=True)
+# fig,ax3 = plt.subplots(figsize=(10,8),ncols=1,nrows=1)
+# x_lit, yi_lit = Total_AMPAR.RunSSProtein(1e-1, 0)
+#
+# # breakpoint()
+# ax3.plot(x_lit, yi_lit/yi_lit[0],
+#                   'y-',
+#                   label=r"$D_p = {:.3f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
+#                   format(1e-1, 0))
+# ax3.set_ylabel("Normalized density", fontsize=fsize)
+# ax3.set_xlabel("Length of dendrite ($\mu$m) ", fontsize=fsize)
+# ax3.set_title("GluA2 protein", fontsize=fsize)
+# ax3.legend(loc='upper right', fontsize=fsize)
+# plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_dist_GluA2_full_{}_{}".format(.1,0)))
+#
+# plt.show()
+#     # x_min = x_min[int(0)]
+# fig,ax3 = plt.subplots(figsize=(10,8),ncols=1,nrows=1)
+# x_lit, yi_lit = Total_AMPAR.RunSSProtein(fitted_vals[0], fitted_vals[1]) # curve_fit(exp_fit, x2, d2)
+# # breakpoint()
+# ax3.plot(x_lit, yi_lit/yi_lit[0],
+#                   color=COLORS_dict["shaft_i"],
+#                   linestyle="-",
+#                   label=r"Theory fit: $D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.4f}$ $\mu m/s$".
+#                   format(fitted_vals[0], fitted_vals[1]))
+#
+#     # breakpoint()
+# ax3.set_ylabel("Normalized density", fontsize=fsize)
+# ax3.set_xlabel("Length of dendrite ($\mu$m) ", fontsize=fsize)
+# ax3.set_title("GluA2 protein", fontsize=fsize)
+# ax3.legend(loc='upper right', fontsize=fsize)
+# plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_dist_GluA2_full_{}_{}".format(fitted_vals[0], fitted_vals[1])))
+# plt.show()
+
+"""
 
 fig, ax1 = plt.subplots(figsize=(8, 30), ncols=1, nrows=len(to_analyse))
 # x_100 =  np.arange(0, 100, bin_size)
@@ -757,14 +861,14 @@ for ldx, l1 in enumerate(to_analyse):
     ax1[ldx].plot(x1, mean_fit_e1, 'g-', label=r"exp1-fit,$\chi^2 = %.2f$" % r2_e1)
     ax1[ldx].plot(x3+x2[0], d2[0]*yi_fit, 'k-', label=r"exp2-fit,$\chi^2 = %.2f$" % chi_squ)
     # ax1[ldx].plot(x_range+bin_size/2,mean_fit_exp,'g--',label=r"line-fit,$R^2 = %.2f$" % r2)
-    f_size = 12
+    # f_size = 12
     loc = "upper right"
     # print(pearsonr(mean_Glua2_density[l1],mean_CNIH2_density[l1]))
     # ax3.errorbar(x_100,mean_int_density,sem_int_density,color=COLORS_dict["shaft_i"],label="GluA2")
-    ax1[ldx].set_ylabel("Normalized CNIH2 fluorescent", size=f_size)
-    ax1[ldx].set_xlabel(r"Dendritic distance in $\mu m$, N={}".format(CNIH2_length_data[l1].shape[0]), size=f_size)
-    ax1[ldx].set_title("Dendritic distribution of GFP normalized CNIH2 density", size=f_size)
-    ax1[ldx].legend(fontsize=f_size, loc=loc)
+    ax1[ldx].set_ylabel("Normalized CNIH2 fluorescent", size=fsize)
+    ax1[ldx].set_xlabel(r"Dendritic distance in $\mu m$, N={}".format(CNIH2_length_data[l1].shape[0]), size=fsize)
+    ax1[ldx].set_title("Dendritic distribution of GFP normalized CNIH2 density", size=fsize)
+    ax1[ldx].legend(fontsize=fsize, loc=loc)
     ax1[ldx].set_xlim([-1, l1])
     # ax1[ldx].yaxis.tick_right()
 plt.tight_layout()
@@ -787,4 +891,4 @@ plt_widget.PlotBinnedStats(np.asarray([x_range]), np.asarray([cnih2_m_den]), np.
                            op_folder+"_norm__with_CNIH2_ss_mode_fit",
                                     bin_size,save_it = 0,fit_exp=1,in_set=0,set_axis_label=0,exp_method="2E")
 
-
+"""

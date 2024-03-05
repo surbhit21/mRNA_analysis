@@ -5,7 +5,7 @@ from scipy.optimize import curve_fit
 from pathlib import Path
 
 # for the numerical integration of mRNA and protein trafficking models
-delta_x = 0.24
+delta_x = 1
 model_L = 500
 # possbile lengths for dendritic distributions
 Lengths = np.asarray([2,25,50,75,100,125,150,200,250])
@@ -53,6 +53,8 @@ def ChiSq(yd,y_fit,sigmas):
     # print(residuals,r_sgs)
     return chi_squ
 
+def RedChisq(yd,y_fit,sigmas,dof):
+    return ChiSq(yd,y_fit,sigmas)/dof
 def BinnedSum(arr, bins, num_col=-1, name=None):
     # print("binned_sum for =",name)
 
@@ -134,14 +136,17 @@ def ExpFit(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         param_bounds = ([-np.inf], [np.inf])
         popt, pcov = curve_fit(normExponential, xdata[Fidx:], ydata[Fidx:], bounds=param_bounds, maxfev=5000)
         y_fit = normExponential(xdata, *popt)
+        dof = ydata.shape[0]-1
     elif ftype == "1E":
         param_bounds = ([-np.inf, -np.inf], [+np.inf, 0])
         popt, pcov = curve_fit(oneExponential, xdata[Fidx:], ydata[Fidx:], bounds=param_bounds)
         y_fit = oneExponential(xdata, *popt)
+        dof = ydata.shape[0] - 2
     elif ftype == "2E":
         param_bounds = ([-np.inf, -np.inf, -np.inf, -np.inf], [+np.inf, 0, +np.inf, 0])
         popt, pcov = curve_fit(twoExponential, xdata[Fidx:], ydata[Fidx:], bounds=param_bounds)
         y_fit = twoExponential(xdata, *popt)
+        dof = ydata.shape[0] - 4
     else:
         raise NotImplementedError("ftype: {} not implemented, contact author or define it yourself".format(ftype))
 
@@ -150,7 +155,7 @@ def ExpFit(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
     ss_res = np.sum(residuals ** 2)
     ss_tot = np.sum((ydata[Fidx:] - np.mean(ydata[Fidx:])) ** 2)
     r_squared = 1 - (ss_res / ss_tot)
-    chi_squ = ChiSq(ydata[Fidx:], y_fit[Fidx:], sigmas[Fidx:])
+    chi_squ = RedChisq(ydata[Fidx:], y_fit[Fidx:], sigmas[Fidx:],dof)
     print("chi-squared = ", chi_squ)
     return y_fit, r_squared, chi_squ
 
@@ -186,7 +191,7 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         fit_paramas.add('b', b_init, min=exp_min, max=exp_max)
         out2 = minimize(Residual, params=fit_paramas, method='leastsq',
                         args=(oneExponential, xdata[Fidx:], ydata[Fidx:]))
-        print("reporting 1E fits ")
+        print("reporting 1E fits for {}".format(molecule))
         report_fit(out2.params)
         y_fit = oneExponential(xdata[Fidx:], out2.params)
         chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 2)
@@ -202,7 +207,7 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         fit_paramas.add('d', d_init, min=exp_min, max=exp_max)
         out2 = minimize(Residual, params=fit_paramas, method='leastsq',
                         args=(twoExponential, xdata[Fidx:], ydata[Fidx:]))
-        print("reporting 2E fits ")
+        print("reporting 2E fits for {}".format(molecule))
         report_fit(out2.params)
         y_fit = twoExponential(xdata[Fidx:], out2.params)
         chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0]-4)

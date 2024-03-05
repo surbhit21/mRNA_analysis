@@ -96,11 +96,28 @@ def Getchange_profile(x_grid,locns,sigma,factor):
         # breakpoint()
     return change_profile
 
-def cLTPExperiment(param, factor):
+def cLTPExperiment(params, factors,param_names,op_dir,step_num):
     # breakpoint()
-    op = param.T*factor
+    new_pa = params.copy()
+    fig, ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1)
+    plt.yscale("log")
+    for pdx, p in enumerate(params):
+        new_pa[pdx] = params[pdx]*factors[pdx]
+        print(factors[pdx])
+        if not factors[pdx] == 1:
+            ax.plot(x_grid, new_pa[pdx] / params[pdx], label=param_names[pdx])
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.set_xlabel(r"Distance from soma ($\mu$m)")
+    ax.set_ylabel(r"$Log_{10}$[Fold change]")
+    ax.tick_params(axis='both', which='major', labelsize=18)
+    # plt.xlabel("Simulation time in mins")
+    # plt.ylabel("Fold change")
+    plt.legend(frameon=False, fontsize=18)
 
-    return op.T
+    SaveFigures("{0}/fig_protocol_{1}_step_{2}".format(op_dir, dt, step_num), dpi=300)
+    plt.show()
+
+    return new_pa
 def ParamChangeGauss(x_grid,param, locns, sigma, factor,uod):
     bf = factor
     b_sig= sigma
@@ -161,7 +178,7 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
     """
     now = datetime.now()
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
-    op_dir = os.getcwd() + "/CNIH2-translation/" + date_time
+    op_dir = os.getcwd() + "/../CNIH2-translation/" + date_time
     os.makedirs(op_dir, exist_ok=True)
     print("date and time:", date_time)
     sim_time = 0
@@ -286,7 +303,7 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     # vp0 = 1
     # ds0 = 1
     P_init = protein_ss_dist
-    t_step0 = 120 * 60  # running for t_step0 secs
+    t_step0 = 2*60 * 60  # running for t_step0 secs
     dp_factors.append(dp0)
     vp_factors.append(vp0)
     kp_factors.append(kp0)
@@ -295,11 +312,11 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     # beta_step0,alpha_Step0,gamma_step0,dc_step0, vp_step0,ds_step0 = PlasticityExperiment(beta,alpha,gamma,dc,vp,ds, lo, x_sdx, f0,a0, g0,dc0,vp0,ds0,0,op_dir,date_time)
 
     dp_step0, vp_step0, kp_step0, betap_step0 = \
-        cLTPExperiment(np.array([dp_arr,
-                                   vp_arr,
-                                   kp_arr,
-                                   betap_arr]),
-                                  np.array([dp0, vp0, kp0, bp0]))
+        cLTPExperiment([dp_arr,vp_arr,kp_arr,betap_arr],
+                       [dp0, vp0, kp0, bp0],
+                       [r"$D_p$", r"$V_p$", r"$K_p$", r"$\beta_p$"],
+                       op_dir,
+                       0)
     model_params = [dp_step0, vp_step0, kp_step0, betap_step0, jpin, mRNA_arr, dx]
     t_range = [0, t_step0]
     t_eval = np.arange(0, t_step0, dt)
@@ -320,7 +337,7 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     # vp0 = 1
     # ds0 = 1
     P_init = data_mat[:, -1]
-    t_step1 = 180 * 60  # running for t_step0 secs
+    t_step1 = 1*60 * 60  # running for t_step0 secs
     dp_factors.append(dp1)
     vp_factors.append(vp1)
     kp_factors.append(kp1)
@@ -329,11 +346,14 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     # beta_step0,alpha_Step0,gamma_step0,dc_step0, vp_step0,ds_step0 = PlasticityExperiment(beta,alpha,gamma,dc,vp,ds, lo, x_sdx, f0,a0, g0,dc0,vp0,ds0,0,op_dir,date_time)
 
     dp_step1, vp_step1, kp_step1, betap_step1 = \
-        cLTPExperiment(np.array([dp_arr,
+        cLTPExperiment([dp_arr,
                                    vp_arr,
                                    kp_arr,
-                                   betap_arr]),
-                                   np.array([dp1, vp1, kp1, bp1]))
+                                   betap_arr],
+                                   [dp1, vp1, kp1, bp1],
+                       [r"$D_p$", r"$V_p$", r"$K_p$", r"$\beta_p$"],
+                       op_dir,
+                       1)
     # breakpoint()
     model_params = [dp_step1, vp_step1, kp_step1, betap_step1, jpin, mRNA_arr, dx]
     t_range = [0, t_step1]
