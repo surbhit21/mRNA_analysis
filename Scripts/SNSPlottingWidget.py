@@ -26,7 +26,7 @@ import scikit_posthocs as sp
 Parent class for All plotting stuff
 """
 class SNSPlottingWidget():
-    def __init__(self,fsize=18,tsize=25,fam='serif',pixelden = 100,lw=3.0,width=8,height=6):
+    def __init__(self,fsize=18,tsize=25,fam='Arial',pixelden = 100,lw=3.0,width=8,height=6):
         rc('font',
             family=fam,
             size=fsize)
@@ -153,7 +153,7 @@ class SNSPlottingWidget():
                 ax3.set_yticks(tics)
                 for i in range(xs.shape[0]):
                     # breakpoint()
-                    yi_fit,chi_squ = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
+                    yi_fit,chi_squ,params = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
                     # breakpoint()
                     ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2_\nu$ = {:.2f}".format(chi_squ))
                     ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
@@ -236,7 +236,7 @@ class SNSPlottingWidget():
             if fit_exp == 1:
                 for i in range(xs.shape[0]):
                     # breakpoint()
-                    yi_fit, ri_squared,chi_squ = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
+                    yi_fit,chi_squ,param = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
                     ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+"-fit")
                     fonkey_fit_y = GetmRNADist(xs[i],0.0018,0.0018)
                     fonkey_fit_y1 = GetmRNADist(xs[i],0.0008,0.0018)

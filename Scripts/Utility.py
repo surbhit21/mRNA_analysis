@@ -180,7 +180,7 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
                         args=(normExponential, xdata[Fidx:], ydata[Fidx:]))
         report_fit(out2.params)
         y_fit = normExponential(xdata[Fidx:], out2.params)
-        chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 1)
+        gof = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 1)
         # breakpoint()
 
     elif ftype == "1E":
@@ -194,7 +194,7 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         print("reporting 1E fits for {}".format(molecule))
         report_fit(out2.params)
         y_fit = oneExponential(xdata[Fidx:], out2.params)
-        chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 2)
+        gof = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0] - 2)
     elif ftype == "2E":
         print("fitting 2E")
         a_init = np.random.uniform(pref_min, pref_max)
@@ -210,7 +210,21 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         print("reporting 2E fits for {}".format(molecule))
         report_fit(out2.params)
         y_fit = twoExponential(xdata[Fidx:], out2.params)
-        chi_squ = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0]-4)
+        gof = ChiSq(ydata[Fidx:], y_fit, sigmas) / (ydata[Fidx:].shape[0]-4)
+    elif ftype == "LINE":
+        inter_min,inter_max = -1000,1000
+        slope_min, slope_max =  -100,100
+        c_init = np.random.uniform(inter_min,inter_max)
+        m_init = np.random.uniform(slope_min,slope_max)
+        fit_paramas.add('m',m_init,min=slope_min,max=slope_max)
+        fit_paramas.add('c', m_init, min=inter_min, max=inter_max)
+        out2 =  minimize(Residual, params=fit_paramas, method='leastsq',
+                        args=(line_fit, xdata[Fidx:], ydata[Fidx:]))
+        print("reporting a line fits for {}".format(molecule))
+        report_fit(out2.params)
+        y_fit = line_fit(xdata[Fidx:], out2.params)
+        gof = R_seq(y_fit,ydata[Fidx:])
+
     else:
         raise NotImplementedError("ftype: {} not implemented, contact author or define it yourself".format(ftype))
 
@@ -218,7 +232,7 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
 
 
 
-    return y_fit, chi_squ
+    return y_fit, gof,out2.params
 
 
 def Residual(paras, fun, x, data):
@@ -237,10 +251,33 @@ def getminmax(arr,orig_min=np.Inf,orig_max=-np.Inf):
 def exp_fit(x,a,b):
     return a*np.exp(-b*x)
 
-def line_fit(x, m,c):
+def line_fit(x, params):
+    m = params['m'].value
+    c = params['c'].value
     return m*x + c
 def R_seq(y_fit,y_orig):
     ss_res = ((y_orig-y_fit)**2).sum()
     ss_tot = ((y_orig-y_orig.mean())**2).sum()
     # print("in R_Seq =",ss_tot,ss_res)
     return 1 - (ss_res/ss_tot)
+
+
+def GetSlidingWindowMeanMatrix(data, window_len, mode='same'):
+    if len(data.shape) != 2:
+        return ("data is not matrix ")
+    print("here")
+    op_matrix = []
+    # op_matrix = np.ones((data.shape[0],op.shape[0]))
+
+    for d in data:
+        # breakpoint()
+        op_matrix.append(GetSlidingWindowMean(d, window_len, mode))
+    op_matrix = np.asarray(op_matrix)
+    return op_matrix
+def GetSlidingWindowMean(data, window_len, mode='same'):
+    try:
+        conv_window = np.ones(window_len) * (1 / window_len)
+        sw_mean = np.convolve(data, conv_window, mode=mode)
+        return sw_mean
+    except:
+        print("exception")

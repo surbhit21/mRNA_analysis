@@ -23,8 +23,8 @@ def FitModelProtein(x, data, sigmas, pars=[],molecule="CNIH2"):
     if pars == []:
         fit_paramas = Parameters()
         np.random.seed(2024)
-        D_P_min = -1.
-        D_P_max = 0
+        D_P_min = -2.
+        D_P_max = -0.1
         D_P_init = np.random.uniform(D_P_min, D_P_max)
         v_P_min = -5.
         v_P_max = 0.

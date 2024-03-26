@@ -41,11 +41,16 @@ soma_data = {}
 dend_data_meta = {}
 soma_data_meta = {}
 
-mRNA_COLOR_code_old = {"Gria1":'#606C38',"Gria2":'#283618',"CNIH2":'#DDA15E',"CamK2a":'#BC6C25'}
+mRNA_COLOR_code_old = {"Gria1":'#606C38',"Gria2":'#283618',"CNIH2":'#DDA15E',"Camk2a":'#BC6C25'}
 
 # based on the finalized color panel at: https://coolors.co/f94144-f3722c-f8961e-f9844a-f9c74f-90be6d-43aa8b-4d908e-577590-277da1
 # colors number 1,3,5,7 selected from left from this panel
-mRNA_COLOR_code_final = {"Gria1":'#F94144',"Gria2":'#F8961E',"CNIH2":'#F9C74F',"CamK2a":'#43AA8B'}
+mRNA_COLOR_code_old1 = {"Gria1":'#F94144',"Gria2":'#F8961E',"CNIH2":'#F9C74F',"Camk2a":'#43AA8B'}
+
+# based on the finalized color panel at: https://coolors.co/f72585-b5179e-7209b7-560bad-480ca8-3a0ca3-3f37c9-4361ee-4895ef-4cc9f0
+# colors number 1,3,5,7 selected from left from this panel
+
+mRNA_COLOR_code_final = {"Gria1":'#560BAD',"Gria2":'#3A0CA3',"CNIH2":'#4361EE',"Camk2a":'#4CC9F0'}
 
 mRNA_COLOR_code = mRNA_COLOR_code_final
 
@@ -549,7 +554,7 @@ if __name__ == '__main__':
     soma_bins = np.arange(0,1,bin_size)
     dend_bins = np.arange(0,Lengths.max(),bin_size)
     lengths_to_analyse = Lengths[1:-3]
-    channel_3_mRNA = "CamK2a"
+    channel_3_mRNA = "Camk2a"
     
     # reading all the files necessary for the analysis
     soma_data,dend_data,dend_data_meta,\
@@ -564,7 +569,7 @@ if __name__ == '__main__':
     pw = PlottingWidgetmRNA()
     
     in_set = 1  #plot in_set normalized plots ?
-    save_it = 0 #save the plots or not (=1 for yes)
+    save_it = 1 #save the plots or not (=1 for yes)
     ax_label = 1 #plot axis labels or not (=1 for yes)
     w_or_wo_ax_label = ["", "_with_ax_label"] #for chaning the filename suffix
     #  calculating fractions for total in soma and dendrites
@@ -689,7 +694,7 @@ if __name__ == '__main__':
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
             labs = [mrna,channel_3_mRNA]
-            x_lab,y_lab,y_lab_norm = [r"Dendritic distance ($\mu m$)",'mRNA puncta density',"Normalized \n mRNA density"]
+            x_lab,y_lab,y_lab_norm = [r"Length of Dendrite ($\mu m$)",'mRNA puncta density',"Normalized \n mRNA density"]
             title = ""#"Spatial distribution of mRNA copy-number"
             file_prefix = "Spatial_mRNA_distribution"
             plot_colors = [mRNA_COLOR_code[mrna],mRNA_COLOR_code[channel_3_mRNA]]
