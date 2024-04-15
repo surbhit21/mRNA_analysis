@@ -22,9 +22,9 @@ bins = np.arange(0, Lengths.max(), bin_size)
 def FitModelProtein(x, data, sigmas, pars=[],molecule="CNIH2"):
     if pars == []:
         fit_paramas = Parameters()
-        np.random.seed(2024)
-        D_P_min = -2.
-        D_P_max = -0.1
+        # np.random.seed(2024)
+        D_P_min = -3.
+        D_P_max = 0
         D_P_init = np.random.uniform(D_P_min, D_P_max)
         v_P_min = -5.
         v_P_max = 0.
@@ -33,7 +33,9 @@ def FitModelProtein(x, data, sigmas, pars=[],molecule="CNIH2"):
         # bp_min = -10
         # bp_max = 0.
         # bp_init = np.random.uniform(bp_min, bp_max)
-
+        print("initial parameters = \n"+"*"*20)
+        print("D_p = {}, V_p = {} \n".format(10**D_P_init,100**v_P_init))
+        print("*" * 20)
         #  parameters to fit diffusion and net drift
         fit_paramas.add('D_P', D_P_init, min=D_P_min, max=D_P_max)
         fit_paramas.add('v_P', v_P_init, min=v_P_min, max=v_P_max)

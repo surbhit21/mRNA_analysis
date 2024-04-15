@@ -167,10 +167,12 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
     """
     fit_paramas = Parameters()
     # np.random.seed(2022)
-    exp_min = -2.0
+    exp_min = -2
     exp_max = 0
-    pref_min = 0
-    pref_max = 200
+    exp_min1 = .0
+    exp_max1 = 1e-2
+    pref_min = -1e3
+    pref_max = 1e3
 
     if ftype == "NormE":
         b_init = np.random.uniform(exp_min, exp_max)
@@ -200,11 +202,11 @@ def ExpFitWithMinimize(ftype, xdata, ydata, sigmas, Fidx, Lidx, molecule):
         a_init = np.random.uniform(pref_min, pref_max)
         b_init = np.random.uniform(exp_min, exp_max)
         c_init = np.random.uniform(pref_min, pref_max)
-        d_init = np.random.uniform(exp_min, exp_max)
+        d_init = np.random.uniform(exp_min1, exp_max1)
         fit_paramas.add('a', a_init, min=pref_min, max=pref_max)
         fit_paramas.add('b', b_init, min=exp_min, max=exp_max)
         fit_paramas.add('c', c_init, min=pref_min, max=pref_max)
-        fit_paramas.add('d', d_init, min=exp_min, max=exp_max)
+        fit_paramas.add('d', d_init, min=exp_min1, max=exp_max1)
         out2 = minimize(Residual, params=fit_paramas, method='leastsq',
                         args=(twoExponential, xdata[Fidx:], ydata[Fidx:]))
         print("reporting 2E fits for {}".format(molecule))

@@ -716,7 +716,7 @@ y_bg_param = stat1+"-bg"
 # plt_widget.CorrelationCalculationAndPlotting(Glua2_df,"GluA2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_GluA2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
 # plt_widget.CorrelationCalculationAndPlotting(CNIH2_df,"CNIH2",compartments,x_param,y_param,y_bg_param,op_file=os.path.join(op_folder,"Coor_plot_bw_{}_{}_CNIH2".format(stat1,stat2)),f_scale_CNIH2_protein=1,save_it=save_it)
 
-fsize = 20
+fsize = plt_widget.fsize
 to_analyse = Lengths[-5:-4]
 win_len = 10
 for l1 in to_analyse:
@@ -724,26 +724,33 @@ for l1 in to_analyse:
     raw_MAP_norm_GluA2 = np.divide(raw_Glua2_data[l1],raw_MAP2_data[l1])
     binned_sum = np.add.reduceat(raw_MAP_norm_GluA2,num_bins,axis=1)
     # breakpoint()
-    # mean_sw = raw_MAP_norm_GluA2.mean(axis=0)
-    # std_sw = raw_MAP_norm_GluA2.std(axis=0)
-    x = np.arange(0,l1,scale_CNIH2_protein)
+    mean_sw = np.median(binned_sum,axis=0)[:-1]
+    std_sw = binned_sum.std(axis=0)[:-1]
+    x = np.linspace(0,l1,mean_sw.shape[0])
     x_range = bins[0:num_bins.shape[0]]
     # print(spearmanr(x,mean_sw))
-    breakpoint()
+    # breakpoint()
     print(binned_sum.mean(axis=0))
     fig,ax = plt.subplots(figsize=(8,6),ncols=1,nrows=1)
     ax.spines[['right', 'top']].set_visible(False)
-    ax.set_ylabel("MAP2 normalized Glua2 [a.b.u]", fontsize=fsize)
+    ax.set_ylabel("MAP2 normalized GluA2 [a.b.u]", fontsize=fsize)
     ax.set_xlabel("Length of dendrite ($\mu$m) ", fontsize=fsize)
     # for i in range(binned_sum.shape[-1]):
     flyprops = {'markersize': 0.01}
     colorprops = None
+    meanprops = {'marker':"s",'markersize':plt_widget.msize,'color':"#2ca02c"}
+    medianprops =meanprops# {'linewidth': 0}
+    whiskerprops = {'color': '#c0c0c0ff','linewidth':7}
+    boxprops = dict(facecolor='k', color='k')
+    ax.spines[['right', 'top']].set_visible(False)
+    ax.spines[['left', 'bottom']].set_linewidth(2)
     ax.boxplot(binned_sum[:,:-1],positions = bins[0:num_bins.shape[0]-1]+bin_size/2,
-               showmeans=True,
-               flierprops=flyprops, showcaps=False,
-               boxprops=colorprops, whiskerprops={'color': 'tab:blue'},
-               widths=1)
-    # yi_fit,rseq,param = ExpFitWithMinimize("LINE",x,mean_sw,std_sw,0,+1,"Glua2")
+               showmeans=False,
+               showfliers=False, showcaps=False,
+               whiskerprops=whiskerprops, boxprops=boxprops, medianprops = medianprops,
+               widths=1,patch_artist=True)
+    yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
+    print("drop =",1-yi_fit[-1]/yi_fit[0])
     # breakpoint()
     x_tics = np.arange(0,l1+1,25)
     no_labels = x_tics.shape[0]#int(np.floor(l1 / 25))
@@ -756,7 +763,7 @@ for l1 in to_analyse:
     # y_tics = np.arange(0,2,0.5)
     # plt.yticks(y_tics)
     # ax.plot(x,yi_fit,color = COLORS_dict["shaft_s"],linestyle="--",linewidth=lw,
-    #         label="line-fit $r^2 = {:.2f},y = {:.4f}x + {:.2f}$".format(rseq,param['m'].value,param['c'].value))
+    #         label="2E-fit")
     # for i in range(raw_MAP_norm_GluA2.shape[0]):
     #     if np.max(raw_MAP_norm_GluA2[i]> 3):
     #         print("i_val = ",i)
@@ -767,6 +774,64 @@ plt.legend()
 plt.tight_layout()
 plt_widget.SaveFigures(os.path.join(op_folder, "raw_glua2_density_profile_{}".format(l1)))
 plt.show()
+
+
+for l1 in to_analyse:
+    num_bins = np.arange(0,int(l1/scale_CNIH2_protein),int(bin_size/scale_CNIH2_protein))
+    raw_MAP_norm_CNIH2 = np.divide(raw_CNIH2_data[l1],raw_MAP2_data[l1])
+    binned_sum = np.add.reduceat(raw_MAP_norm_CNIH2,num_bins,axis=1)
+    # breakpoint()
+    mean_sw = np.median(binned_sum,axis=0)[:-1]
+    std_sw = binned_sum.std(axis=0)[:-1]
+    x = np.linspace(0,l1,mean_sw.shape[0])
+    x_range = bins[0:num_bins.shape[0]]
+    # print(spearmanr(x,mean_sw))
+    # breakpoint()
+    print(binned_sum.mean(axis=0))
+    fig,ax = plt.subplots(figsize=(8,6),ncols=1,nrows=1)
+    ax.spines[['right', 'top']].set_visible(False)
+    ax.set_ylabel("MAP2 normalized CNIH2 [a.b.u]", fontsize=fsize)
+    ax.set_xlabel("Length of dendrite ($\mu$m) ", fontsize=fsize)
+    # for i in range(binned_sum.shape[-1]):
+    flyprops = {'markersize': 0.01}
+    colorprops = None
+    meanprops = {'marker':"s",'markersize':plt_widget.msize,'color':"#2ca02c"}
+    medianprops =meanprops# {'linewidth': 0}
+    whiskerprops = {'color': '#c0c0c0ff','linewidth':7}
+    boxprops = dict(facecolor='k', color='k')
+    ax.spines[['right', 'top']].set_visible(False)
+    ax.spines[['left', 'bottom']].set_linewidth(2)
+    ax.boxplot(binned_sum[:,:-1],positions = bins[0:num_bins.shape[0]-1]+bin_size/2,
+               showmeans=False,
+               showfliers=False, showcaps=False,
+               whiskerprops=whiskerprops, boxprops=boxprops, medianprops = medianprops,
+               widths=1,patch_artist=True)
+    yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
+    print("drop =",1-yi_fit[-1]/yi_fit[0])
+    # breakpoint()
+    x_tics = np.arange(0,l1+1,25)
+    no_labels = x_tics.shape[0]#int(np.floor(l1 / 25))
+    label = [f'{i * l1 / no_labels:.0f}' for i in range(no_labels + 1)]
+    ax.set_xticks(range(0, l1 + 1, 20))
+    ax.set_xticklabels(label)
+    print(x_tics)
+    plt.xticks(x_tics)
+    lw=3
+    # y_tics = np.arange(0,2,0.5)
+    # plt.yticks(y_tics)
+    # ax.plot(x,yi_fit,color = COLORS_dict["shaft_s"],linestyle="--",linewidth=lw,
+    #         label="2E-fit")
+    # for i in range(raw_MAP_norm_GluA2.shape[0]):
+    #     if np.max(raw_MAP_norm_GluA2[i]> 3):
+    #         print("i_val = ",i)
+    #     ax.plot(x, raw_MAP_norm_GluA2[i], color='gray', linewidth=lw / 3, alpha=0.1)
+    # ax.plot(x,mean_sw,color=COLORS_dict["shaft_i"],label="Glua2",linewidth=lw)
+    ax.set_xlim([-1, l1+1])
+plt.legend()
+plt.tight_layout()
+# plt_widget.SaveFigures(os.path.join(op_folder, "raw_glua2_density_profile_{}".format(l1)))
+plt.show()
+
 # breakpoint()
 fig,ax2 = plt.subplots(figsize=(10,8*len(to_analyse)),ncols=1,nrows=len(to_analyse))
 # lta = 100
@@ -777,7 +842,10 @@ for ldx,l1 in enumerate(to_analyse):
     # ax2[ldx].plot(x_range,mean_CNIH2_density[l1],color=COLORS_dict["shaft_s"],label="CNIH2",marker='d',linestyle="--")
     # ax2[ldx].plot(x_range,mean_MAP2_density[l1],color="r",label="MAP2",marker='s',linestyle="-")
     # ax2[ldx].spines[["right", "top"]].set_visible(False)
-    ax2[ldx].plot(x_range,mean_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="Experimental data",marker='o',markersize=7,linestyle="--",alpha=0.8)
+    ax2[ldx].errorbar(x_range,mean_Glua2_density[l1],sem_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="Experimental data",marker='o',markersize=7,linestyle="--",alpha=0.8)
+    # ax2[ldx].plot(x_range, mean_MAP2_density[l1], color=COLORS_dict["shaft_s"], label="MAP2", marker='o',
+    #               markersize=7, linestyle="--", alpha=0.8)
+
     # breakpoint()
 
     x_lit, yi_lit = Total_AMPAR.RunSSProtein(D_P=1., v_P=1.46, x_range=[0, l1])

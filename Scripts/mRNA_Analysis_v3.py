@@ -50,7 +50,7 @@ mRNA_COLOR_code_old1 = {"Gria1":'#F94144',"Gria2":'#F8961E',"CNIH2":'#F9C74F',"C
 # based on the finalized color panel at: https://coolors.co/f72585-b5179e-7209b7-560bad-480ca8-3a0ca3-3f37c9-4361ee-4895ef-4cc9f0
 # colors number 1,3,5,7 selected from left from this panel
 
-mRNA_COLOR_code_final = {"Gria1":'#560BAD',"Gria2":'#3A0CA3',"CNIH2":'#4361EE',"Camk2a":'#4CC9F0'}
+mRNA_COLOR_code_final = {"Gria1":'#560BAD',"Gria2":'#07bebe',"CNIH2":'#4361EE',"Camk2a":'#7f3b8f'}
 
 mRNA_COLOR_code = mRNA_COLOR_code_final
 
@@ -694,7 +694,7 @@ if __name__ == '__main__':
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
             labs = [mrna,channel_3_mRNA]
-            x_lab,y_lab,y_lab_norm = [r"Length of Dendrite ($\mu m$)",'mRNA puncta density',"Normalized \n mRNA density"]
+            x_lab,y_lab,y_lab_norm = [r"Dendritic distance ($\mu m$)",'mRNA puncta density',"Normalized \n mRNA density"]
             title = ""#"Spatial distribution of mRNA copy-number"
             file_prefix = "Spatial_mRNA_distribution"
             plot_colors = [mRNA_COLOR_code[mrna],mRNA_COLOR_code[channel_3_mRNA]]

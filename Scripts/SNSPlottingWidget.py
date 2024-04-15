@@ -26,7 +26,7 @@ import scikit_posthocs as sp
 Parent class for All plotting stuff
 """
 class SNSPlottingWidget():
-    def __init__(self,fsize=18,tsize=25,fam='Arial',pixelden = 100,lw=3.0,width=8,height=6):
+    def __init__(self,fsize=26,msize=15,tsize=25,fam='Arial',pixelden = 100,lw=3.0,width=8,height=6):
         rc('font',
             family=fam,
             size=fsize)
@@ -81,6 +81,7 @@ class SNSPlottingWidget():
            linewidth=lw,
            markersize=4*lw)
         self.fsize = fsize
+        self.msize = msize
     def CreateFolderRecursive(self,folder):
         """
             function creates folders upto  a path recursively
@@ -131,7 +132,7 @@ class SNSPlottingWidget():
             #     for i in range(xs.shape[0]):
             #         ax2.plot(xs[i], MAP2_norm[i] , color=color[i], marker='o', markersize=4, linestyle='dashed')
             for i in range(xs.shape[0]):
-               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='d',linestyle='None' ,zorder=6)
+               ax.errorbar(xs[i],means[i],stds[i],label=labs[i],color=color[i],marker='o',markersize=self.msize,linestyle='None' ,zorder=6)
                # per = 75
                # i_close = self.getclosestindex(means[i],per)
                # ax.vlines(x=xs[i,i_close],ymin=0,ymax=(means+stds).max(),
@@ -154,6 +155,7 @@ class SNSPlottingWidget():
                 for i in range(xs.shape[0]):
                     # breakpoint()
                     yi_fit,chi_squ,params = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
+                    print("drop = {}, for {}".format(1-yi_fit[-1]/yi_fit[0],labs[i]))
                     # breakpoint()
                     ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2_\nu$ = {:.2f}".format(chi_squ))
                     ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
@@ -170,6 +172,7 @@ class SNSPlottingWidget():
                     # breakpoint()
                     print("fitting Fonkeu model for {}".format(labs[i]))
                     x1,yi_fit,chi_squ,paras,mini,out2 = FitModel( xs[i], means[i],stds[i,:],j_r_fcator=j_r_factors[i])
+                    print("drop = {}, for {}".format(1 - yi_fit[-1] / yi_fit[0], labs[i]))
                     # breakpoint()
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
@@ -187,6 +190,7 @@ class SNSPlottingWidget():
                     # breakpoint()
                     print("fitting Fonkeu model for {}".format(labs[i]))
                     x1,yi_fit,chi_squ,paras,mini,out2 = FitModelProtein( xs[i], means[i],stds[i,:])
+                    print("drop = {}, for {}".format(1 - (yi_fit[-1]/yi_fit[0]), labs[i]))
                     # breakpoint()
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
@@ -346,7 +350,7 @@ class SNSPlottingWidget():
         else:
             print("Not same length of xs and means",xs.shape,data1.shape)
     def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize = (9,6))
         ax.spines[['right', 'top']].set_visible(False)
         # y_range = [0.0,0.2,0.4,0.6,0.8,1]
         # ax.set_yticklabels(y_range)
@@ -362,6 +366,13 @@ class SNSPlottingWidget():
         for i in range(num_plots):
             bp1 = ax.boxplot(fractions[groups*i],widths = 0.5,positions=[i*(groups+1)+pos[0]],showfliers=False,labels=[compartment[0]])
             bp2 = ax.boxplot(fractions[groups*i+groups-1],widths = 0.5,positions=[i*(groups+1)+pos[1]],showfliers=False,labels=[compartment[1]],patch_artist=True, )
+            mean_1 = int(np.mean(fractions[groups*i]) * 100)
+            mean_2 = 100 - mean_1
+            print("means = ",mean_1,mean_2)
+            ax.text(x = i*(groups+1)+pos[0],y = np.max(fractions[groups*i]) + 0.2,
+                    s = r"{}% in ".format(mean_1)+"\n" + "{}".format(compartment[0].lower()),fontsize=self.fsize)
+            ax.text(x=i*(groups+1)+pos[1], y=np.max(fractions[groups*i+groups-1]) + 0.2,
+                    s=r"{}% in ".format(mean_2)+"\n" + "{}".format(compartment[1].lower()),fontsize=self.fsize)
             x_points.append(i*(groups+1)+pos)
             x_points.append([i*(groups+1)+pos[1],(num_plots-1)*(groups+1)+pos[1]])
             x_tics.append(i*(groups+1)+pos.mean())
@@ -384,7 +395,7 @@ class SNSPlottingWidget():
         # breakpoint()
         pairs = np.array(pairs)
         # plt.legend(loc="upper right")
-        y_max = 1
+        y_max = 1.3
         for idx,pair in enumerate(pairs):
             txt = ''
             print(p_values[pair[0]][pair[1]],pair)
