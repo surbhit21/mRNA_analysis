@@ -52,6 +52,8 @@ def ExploreParameter(V_p_list = [],
     ax.spines[['right', 'top']].set_visible(False)
     ax.spines[['left', 'bottom']].set_linewidth(2)
     ax1 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)
+    # breakpoint()
+
     if not V_p_list == []:
         tics = np.arange(0, 1.2, 0.5)
         ax.plot(x_init[display_range],yi_init[display_range]/yi_init[0],label=r"$V_p$",color=colors_arr[-1],linewidth=def_lw)
@@ -60,9 +62,10 @@ def ExploreParameter(V_p_list = [],
         print("drop = ", drop)
         ax.text(x=display_range[-1], y=(yi_init/ yi_init[0])[display_range[-1]],
                 s=r"{}%".format(int(drop)), color=def_colo,fontsize=fsize)
-
+        print("change at ~ 300 mu m is: ", (1 - yi_init[300] / yi_init[1]))
         for vdx,vp in enumerate(V_p_list):
             x, yi = Total_AMPAR.RunSSProtein(D_pinit, V_pinit*vp)
+            print("change at ~ 300 mu m is: ", (1 - yi[300] / yi[1]))
             if Norm_by_own_origin:
                 yi /= yi[0]
             else:

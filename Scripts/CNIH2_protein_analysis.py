@@ -806,7 +806,7 @@ for l1 in to_analyse:
                showfliers=False, showcaps=False,
                whiskerprops=whiskerprops, boxprops=boxprops, medianprops = medianprops,
                widths=1,patch_artist=True)
-    yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
+    yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"CNIH2")
     print("drop =",1-yi_fit[-1]/yi_fit[0])
     # breakpoint()
     x_tics = np.arange(0,l1+1,25)
@@ -829,7 +829,7 @@ for l1 in to_analyse:
     ax.set_xlim([-1, l1+1])
 plt.legend()
 plt.tight_layout()
-# plt_widget.SaveFigures(os.path.join(op_folder, "raw_glua2_density_profile_{}".format(l1)))
+plt_widget.SaveFigures(os.path.join(op_folder, "raw_cnih2_density_profile_{}".format(l1)))
 plt.show()
 
 # breakpoint()
