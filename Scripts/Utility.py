@@ -5,7 +5,7 @@ from scipy.optimize import curve_fit
 from pathlib import Path
 
 # for the numerical integration of mRNA and protein trafficking models
-delta_x = 1
+delta_x = 0.24
 model_L = 500
 # possbile lengths for dendritic distributions
 Lengths = np.asarray([2,25,50,75,100,125,150,200,250])

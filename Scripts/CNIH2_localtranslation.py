@@ -337,7 +337,7 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     # vp0 = 1
     # ds0 = 1
     P_init = data_mat[:, -1]
-    t_step1 = 1*60 * 60  # running for t_step0 secs
+    t_step1 = 3*60 * 60  # running for t_step0 secs
     dp_factors.append(dp1)
     vp_factors.append(vp1)
     kp_factors.append(kp1)
@@ -363,8 +363,61 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     sim_time += t_step1
     data_mat = np.concatenate((data_mat, soln1.y), axis=1)
     print("Step 1 finished at simulation time  = ", sim_time)
-
     saveoutput(op_dir, date_time, data_mat, total_tps, 100, baseline_param_file)
+
+
+def CNIH2cLTP_soma(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, location):
+    """
+    step zero, we simulate the chemical LTP with an increase in somatic influx for duration t_step0
+    step one, we simulate the model with basal influx from soma for the t_step1 time further
+    we integrate for a total of 30 mins to see the GluA1 dynamics
+    """
+    now = datetime.now()
+    date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
+    op_dir = os.getcwd() + "/CNIH2-translation/" + date_time
+    op_protocol_file = "protocol_{}.json".format(date_time)
+    os.makedirs(op_dir, exist_ok=True)
+    print("date and time:", date_time)
+    sim_time = 0
+    time_steps = []
+    jpin_factors = []
+    """
+    Step 0
+    """
+    jp0 = 2e+3
+    jpin_factors.append(jp0)
+    P_init = protein_ss_dist
+    t_step0 = 10 * 60  # running for t_step0 secs
+    time_steps.append(t_step0)
+    model_params = [dp_arr, vp_arr, kp_arr, betap_arr, jp0*jpin, mRNA_arr, dx]
+    t_range = [0, t_step0]
+    t_eval = np.arange(0, t_step0, dt)
+    soln0 = DynamicSimRun(model_params, t_range, t_eval, P_init, max_step=100 * dt, method='RK45')
+    data_mat = soln0.y
+    total_tps = soln0.t
+    sim_time += t_step0
+    print("Step 0 finished at simulation time  = ", sim_time)
+
+    """
+    Step 1
+    """
+    jp1 = 1
+    jpin_factors.append(jp1)
+    P_init = data_mat[:, -1]
+    t_step1 = 30 * 60  # running for t_step0 secs
+    time_steps.append(t_step1)
+    model_params = [dp_arr, vp_arr, kp_arr, betap_arr,  jp1*jpin, mRNA_arr, dx]
+    t_range = [0, t_step1]
+    t_eval = np.arange(0, t_step1, dt)
+    soln1 = DynamicSimRun(model_params, t_range, t_eval, P_init, max_step=100 * dt, method='RK45')
+    total_tps = np.concatenate((total_tps, (soln1.t + sim_time)))
+    sim_time += t_step1
+    data_mat = np.concatenate((data_mat, soln1.y), axis=1)
+    print("Step 1 finished at simulation time  = ", sim_time)
+    saveoutput(op_dir, date_time, data_mat, total_tps, 100, baseline_param_file)
+    savesimsettings(2,time_steps,locations="FULL",protocol_file = os.path.join(op_dir,op_protocol_file),
+                    jp_factors=jpin_factors)
+
 
 dP_array = ss_model.D_P * np.ones(protein_ss_dist.shape)
 vP_array = ss_model.v_P * np.ones(protein_ss_dist.shape)
@@ -378,21 +431,10 @@ loc_arr = [int(l) for l in loc]
 # x_span = 3
 # x_span_dx = int(x_span )
 # breakpoint()
-# CNIH2Plasticity(dP_array,
-#                              vP_array,
-#                              kP_array,
-#                              betaP_array,
-#                              mRNA_arr,
-#                              jpin,
-#                              ss_model.dx,
-#                              x_grid,
-#                              loc_arr)
-CNIH2cLTP(dP_array,
-                             vP_array,
-                             kP_array,
-                             betaP_array,
-                             mRNA_arr,
-                             jpin,
-                             ss_model.dx,
-                             x_grid,
-                             loc_arr)
+plasticity = "cLTP_local" #"cLTP_local","2p"
+if plasticity == "2p":
+    CNIH2Plasticity(dP_array, vP_array, kP_array,betaP_array,mRNA_arr,jpin,ss_model.dx,x_grid,loc_arr)
+elif plasticity == "cLTP_local":
+    CNIH2cLTP(dP_array,vP_array,kP_array,betaP_array,mRNA_arr,jpin,ss_model.dx,x_grid,loc_arr)
+elif plasticity == "cLTP_soma":
+    CNIH2cLTP_soma(dP_array,vP_array,kP_array,betaP_array,mRNA_arr,jpin,ss_model.dx,x_grid,loc_arr)

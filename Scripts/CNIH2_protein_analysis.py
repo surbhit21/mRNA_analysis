@@ -454,31 +454,32 @@ class CNHI2DataAnalysis():
         for l in Lengths[:-2]:
             x = np.arange(0, l, bin_size)
             x1 = np.arange(0, l, scale_CNIH2_protein)
-            if soma_norm == 1:
-                norm_CNIH2[l] = self.GetSomaNormDistribution(CNIH2_data[l], index=off_set)
-                norm_GluA2[l] = self.GetSomaNormDistribution(Glua2_data[l], index=off_set)
-            else:
-                norm_CNIH2[l] = CNIH2_data[l]
-                norm_GluA2[l] = Glua2_data[l]
-            print(CNIH2_data[l].shape)
-            CNIH2_mean = CNIH2_data[l].mean(axis=0)
-            CNIH2_std = CNIH2_data[l].std(axis=0)
+            if l in CNIH2_data.keys():
+                if soma_norm == 1 :
+                    norm_CNIH2[l] = self.GetSomaNormDistribution(CNIH2_data[l], index=off_set)
+                    norm_GluA2[l] = self.GetSomaNormDistribution(Glua2_data[l], index=off_set)
+                else:
+                    norm_CNIH2[l] = CNIH2_data[l]
+                    norm_GluA2[l] = Glua2_data[l]
+                print(CNIH2_data[l].shape)
+                CNIH2_mean = CNIH2_data[l].mean(axis=0)
+                CNIH2_std = CNIH2_data[l].std(axis=0)
 
-            mean_CNIH2[l] = norm_CNIH2[l].mean(axis=0)[off_set:x.shape[0] + off_set]
-            std_CNIH2[l] = norm_CNIH2[l].std(axis=0)[off_set:x.shape[
-                                                                 0] + off_set]  # (CNIH2_std[1]/CNIH2_mean[1] + CNIH2_std/CNIH2_mean)*mean_CNIH2[l]
-            sem_CNIH2[l] = std_CNIH2[l] / np.sqrt(norm_CNIH2[l].shape[0])
+                mean_CNIH2[l] = norm_CNIH2[l].mean(axis=0)[off_set:x.shape[0] + off_set]
+                std_CNIH2[l] = norm_CNIH2[l].std(axis=0)[off_set:x.shape[
+                                                                     0] + off_set]  # (CNIH2_std[1]/CNIH2_mean[1] + CNIH2_std/CNIH2_mean)*mean_CNIH2[l]
+                sem_CNIH2[l] = std_CNIH2[l] / np.sqrt(norm_CNIH2[l].shape[0])
 
-            Glua2_mean = Glua2_data[l].mean(axis=0)
-            Glua2_std = Glua2_data[l].std(axis=0)
+                Glua2_mean = Glua2_data[l].mean(axis=0)
+                Glua2_std = Glua2_data[l].std(axis=0)
 
-            mean_GluA2[l] = norm_GluA2[l].mean(axis=0)[off_set:x.shape[0] + off_set]
-            std_GluA2[l] = norm_GluA2[l].std(axis=0)[off_set:x.shape[
-                                                                 0] + off_set]  # (Glua2_std[1]/Glua2_mean[1] + Glua2_std/Glua2_mean)*mean_GluA2[l]
-            sem_GluA2[l] = std_GluA2[l] / np.sqrt(norm_GluA2[l].shape[0])
+                mean_GluA2[l] = norm_GluA2[l].mean(axis=0)[off_set:x.shape[0] + off_set]
+                std_GluA2[l] = norm_GluA2[l].std(axis=0)[off_set:x.shape[
+                                                                     0] + off_set]  # (Glua2_std[1]/Glua2_mean[1] + Glua2_std/Glua2_mean)*mean_GluA2[l]
+                sem_GluA2[l] = std_GluA2[l] / np.sqrt(norm_GluA2[l].shape[0])
 
-            norm_CNIH2[l] = norm_CNIH2[l][off_set:x.shape[0] + off_set]
-            norm_GluA2[l] = norm_GluA2[l][off_set:x.shape[0] + off_set]
+                norm_CNIH2[l] = norm_CNIH2[l][off_set:x.shape[0] + off_set]
+                norm_GluA2[l] = norm_GluA2[l][off_set:x.shape[0] + off_set]
 
         return mean_GluA2, sem_GluA2, std_GluA2, norm_GluA2, \
                mean_CNIH2, sem_CNIH2, std_CNIH2, norm_CNIH2
@@ -663,6 +664,16 @@ mean_CNIH2_density,sem_CNIH2_density,std_CNIH2_density,norm_CNIH2_c_density= G2D
 mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density,\
 mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density= G2DA_c.GetNormalizedDendriticDistribution(MAP2_length_data,MAP2_length_data)
 
+
+# loading the total glua2 data from M. Kracht
+total_glua2_mk = {}
+with open("./total_glua2_data.json") as fp:
+    total_glua2_mk = json.load(fp)
+total_glua2_mk = {int(k):np.array(v) for k,v in total_glua2_mk.items()}
+mean_total_Glua2_mk,sem_total_Glua2_mk,std_total_Glua2_mk,norm_total_Glua2_mk,\
+mean_total_Glua2_mk,sem_total_Glua2_mk,std_total_Glua2_mk,norm_total_Glua2_mk = G2DA_c.GetNormalizedDendriticDistribution(total_glua2_mk,total_glua2_mk)
+# breakpoint()
+
 # breakpoint()
 plt_widget = SNSPlottingWidget()
 ## sanity check to see if the Rois and Background has same area
@@ -775,7 +786,6 @@ plt.tight_layout()
 plt_widget.SaveFigures(os.path.join(op_folder, "raw_glua2_density_profile_{}".format(l1)))
 plt.show()
 
-
 for l1 in to_analyse:
     num_bins = np.arange(0,int(l1/scale_CNIH2_protein),int(bin_size/scale_CNIH2_protein))
     raw_MAP_norm_CNIH2 = np.divide(raw_CNIH2_data[l1],raw_MAP2_data[l1])
@@ -842,33 +852,45 @@ for ldx,l1 in enumerate(to_analyse):
     # ax2[ldx].plot(x_range,mean_CNIH2_density[l1],color=COLORS_dict["shaft_s"],label="CNIH2",marker='d',linestyle="--")
     # ax2[ldx].plot(x_range,mean_MAP2_density[l1],color="r",label="MAP2",marker='s',linestyle="-")
     # ax2[ldx].spines[["right", "top"]].set_visible(False)
-    ax2[ldx].errorbar(x_range,mean_Glua2_density[l1],sem_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="Experimental data",marker='o',markersize=7,linestyle="--",alpha=0.8)
+    ax2[ldx].errorbar(x_range,mean_Glua2_density[l1],sem_Glua2_density[l1],color=COLORS_dict["shaft_i"],
+                      label="ASH data",marker='o',markersize=7,linestyle="--",alpha=0.8)
     # ax2[ldx].plot(x_range, mean_MAP2_density[l1], color=COLORS_dict["shaft_s"], label="MAP2", marker='o',
     #               markersize=7, linestyle="--", alpha=0.8)
 
     # breakpoint()
 
-    x_lit, yi_lit = Total_AMPAR.RunSSProtein(D_P=1., v_P=1.46, x_range=[0, l1])
-    ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
-                  'g-',
-                  label=r"$D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
-                  format(1., 1.46))
-
-    x_lit, yi_lit = Total_AMPAR.RunSSProtein(D_P=1.5e-2, v_P=0, x_range=[0, l1])
-    # breakpoint()
-    ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
-                  'y-',
-                  label=r"$D_p = {:.3f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
-                  format(1.5e-2, 0))
+    # x_lit, yi_lit = Total_AMPAR.RunSSProtein(D_P=1., v_P=1.46, x_range=[0, l1])
+    # ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
+    #               'g-',
+    #               label=r"$D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
+    #               format(1., 1.46))
+    #
+    # x_lit, yi_lit = Total_AMPAR.RunSSProtein(D_P=1.5e-2, v_P=0, x_range=[0, l1])
+    # # breakpoint()
+    # ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
+    #               'y-',
+    #               label=r"$D_p = {:.3f}$ $\mu m^2/s$, $v_P = {:.2f}$ $\mu m/s$".
+    #               format(1.5e-2, 0))
     # x_min = x_min[int(0)]
     x, yi_fit, chi_squ, paras, mini, out2 = FitModelProtein(x_range, mean_Glua2_density[l1] / mean_Glua2_density[l1][0],
                                                             sem_Glua2_density[l1],
                                                             molecule="GluA2")  # curve_fit(exp_fit, x2, d2)
+    print("chi squ = ",chi_squ)
     # breakpoint()
     print(yi_fit[0]-yi_fit[-1])
     fitted_vals = [10 ** paras['D_P'].value,10 ** paras['v_P'].value]
     x_lit, yi_fit = Total_AMPAR.RunSSProtein(D_P=fitted_vals[0], v_P=fitted_vals[1])
     # breakpoint()
+    left, bottom, width, height = [0.4, 0.45, 0.3, 0.3]
+    tics = np.arange(0, 1.2, 0.5)
+    ax1 = ax2[ldx].inset_axes(bounds=[left, bottom, width, height], zorder=4)
+    # ax1.set_title("Normalized \n density")
+    ax1.set_ylabel("Normalized \n protein density")
+    # ax1.set_yticks(tics)
+    ax.set_xlim(x_lit[0], x_lit[-1] + 1)
+    x_tics = np.arange(x_lit[0], x_lit[-1] + 1, (x_lit[-1] - x_lit[0] + 1) // 5)
+    # ax.set_xticks(x_tics)
+    ax1.plot(x_lit, yi_fit / yi_fit[0], color=COLORS_dict["shaft_i"])
     ax2[ldx].plot(x_lit,yi_fit/yi_fit[0],
                   color=COLORS_dict["shaft_i"],
                   linestyle="-",
@@ -891,6 +913,52 @@ for ldx,l1 in enumerate(to_analyse):
 plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_dist_GluA2_fitted"))
 plt.show()
 
+
+# fitting to the total GluA2 from MK data
+fig,ax2 = plt.subplots(figsize=(10,8*len(to_analyse)),ncols=1,nrows=len(to_analyse))
+ax2 = [ax2]
+for l1 in to_analyse:
+    x_range = np.arange(0, l1, bin_size)
+    ax2[ldx].errorbar(x_range, mean_total_Glua2_mk[l1], sem_total_Glua2_mk[l1], color=COLORS_dict["shaft_i"],
+                      label="MK data", marker='o', markersize=7, linestyle="--", alpha=0.8)
+
+    x, yi_fit, chi_squ, paras, mini, out2 = FitModelProtein(x_range, mean_total_Glua2_mk[l1] / mean_total_Glua2_mk[l1][0],
+                                                            sem_total_Glua2_mk[l1],
+                                                            molecule="GluA2")  # curve_fit(exp_fit, x2, d2)
+    print("chi_seq = ", chi_squ)
+    # breakpoint()
+    print("Theory fit: $D_p = {}$ $\mu m^2/s$, $v_P = {}$ $\mu m/s$".
+                  format(10 ** paras['D_P'].value, 10 ** paras['v_P'].value))
+    print(yi_fit[0] - yi_fit[-1])
+    # fitted_vals = [10 ** paras['D_P'].value, 10 ** paras['v_P'].value]
+    x_lit, yi_fit = Total_AMPAR.RunSSProtein(D_P=10 ** paras['D_P'], v_P=10 ** paras['v_P'].value)
+    # breakpoint()
+    left, bottom, width, height = [0.4, 0.45, 0.3, 0.3]
+    tics = np.arange(0, 1.2, 0.5)
+    ax1 = ax2[ldx].inset_axes(bounds=[left, bottom, width, height], zorder=4)
+    # ax1.set_title("Normalized \n density")
+    ax1.set_ylabel("Normalized \n protein density")
+    # ax1.set_yticks(tics)
+    ax.set_xlim(x_lit[0], x_lit[-1] + 1)
+    x_tics = np.arange(x_lit[0], x_lit[-1] + 1, (x_lit[-1] - x_lit[0] + 1) // 5)
+    # ax.set_xticks(x_tics)
+    ax1.plot(x_lit, yi_fit / yi_fit[0], color=COLORS_dict["shaft_i"])
+    ax2[ldx].plot(x_lit, yi_fit / yi_fit[0],
+                  color=COLORS_dict["shaft_i"],
+                  linestyle="-",
+                  label=r"Theory fit: $D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.4f}$ $\mu m/s$".
+                  format(10 ** paras['D_P'].value, 10 ** paras['v_P'].value))
+
+    # breakpoint()
+    ax2[ldx].set_ylabel("Normalized density", fontsize=fsize)
+    ax2[ldx].set_xlabel("Length of dendrite ($\mu$m) ", fontsize=fsize)
+    ax2[ldx].set_title("GluA2 protein", fontsize=fsize)
+    ax2[ldx].legend(loc='lower left', fontsize=fsize)
+    ax2[ldx].set_xlim([-1, l1 + 1])
+    ax2[ldx].set_ylim([0.0, 2])
+plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_intesity_Dend_MK_dist_GluA2_fitted"))
+plt.show()
+    # breakpoint()
 def plot_velocity_impact(dp,vp,color,fname,prefix="",log=False,y_lim=False,loc="upper right"):
     fig,ax = plt.subplots(figsize=(10,8),ncols=1,nrows=1)
     x_lit, yi_lit = Total_AMPAR.RunSSProtein(dp,vp)

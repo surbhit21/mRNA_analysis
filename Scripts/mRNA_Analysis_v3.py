@@ -738,7 +738,7 @@ if __name__ == '__main__':
                     # np.nan_to_num(norm_density_std
                 
                 MAP2_norm_stds = np.nan_to_num(MAP2_norm_stds) 
-                norm_density_std = np.nan_to_num(norm_density_std) 
+                norm_density_std = np.nan_to_num(norm_density_std)
                 # removing all sample that has infinite or nan entries after nomalization 
                 MAP2_norm_data_camKII = MAP2_norm_data_camKII[~np.isnan(MAP2_norm_data_camKII).any(axis=1)]
                 MAP2_norm_data = MAP2_norm_data[~np.isnan(MAP2_norm_data).any(axis=1)]
@@ -748,7 +748,7 @@ if __name__ == '__main__':
                 # pw.PlotFittedCurves(xs, MAP2_norm_data, MAP2_norm_data_camKII, labs, x_lab, y_lab, y_lab_norm,plot_colors,title+"_curve_fit", op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}".format(stats_list[stat_no],mrna,width,l1)\
                 #                   ,bin_size,save_it = save_it,set_axis_label=ax_label,exp_method="NormE")
                 # #
-                # breakpoint()
+                breakpoint()
                 pw.PlotBinnedStats(np.asarray([xs,xs]), MAP2_norm_means, MAP2_norm_stds,norm_density_mean, labs, x_lab, y_lab, y_lab_norm,plot_colors,title, op_folder+file_prefix+"_norm_{0}_{1}_{2}_len_{3}_{4}".format(stats_list[stat_no],mrna,width,l1,w_or_wo_ax_label[ax_label])\
                                   ,bin_size,save_it = save_it,fit_exp=count_fittings[ldx],in_set=in_set,set_axis_label=ax_label,exp_method="1E")
                 # breakpoint()

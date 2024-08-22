@@ -52,21 +52,24 @@ def CNIH2TimeDynamics(t, y, Dp,vP,kP,betaP,Jpin,mRNA, dx):
     P = y
     # dydt is the return value of this function.
     dydt = np.empty_like(y)
+    # updated after calculations on 22 Aug 2024
+    dydt[0] =  (Dp[0]/dx**2 - vP[0]/dx)* P[1] - \
+               (Dp[0] / dx**2) * P[0] - \
+               Degradation(P[0],kP[0]) + \
+               (Jpin / dx) +\
+               local_translation(mRNA[0],betaP[0])
 
-    # beta_p = gettemporalprofile(locn,t,sigma)
-    dydt[0] =  Jpin *(1/dx + vP[0]/Dp[0]) - \
-               (Dp[0]/dx**2 + vP[0]/dx) *P[0] +\
-                (Dp[0]/dx**2)* P[1] +\
-              local_translation(mRNA[0],betaP[0]) - \
-              Degradation(P[0],kP[0])
-    dydt[1:-1] = Dp[1:-1]* np.diff(P,2) +\
-                 vP[1:-1] * np.diff(P,1) [1:]  - \
-                 Degradation(P[1:-1],kP[1:-1]) +\
+    dydt[1:-1] = Dp[1:-1]* np.diff(P,2) / dx**2 - \
+                 vP[1:-1] * np.diff(P,1) [1:] / dx - \
+                 Degradation(P[1:-1],kP[1:-1]) + \
                  local_translation(mRNA[1:-1],betaP[1:-1])
-    dydt[-1] = local_translation(mRNA[-1],betaP[-1]) - \
+
+    dydt[-1] = (Dp[-1] / dx**2)*P[-2] - \
+               (Dp[-1]/dx**2 + vP[-1]**2/Dp - vP[-1]/dx) * P[-1] - \
                Degradation(P[-1],kP[-1]) + \
-               (Dp[-1]/(dx**2) + vP[-1]/(2*dx))*P[-2] + \
-               (vP[-1]/(2*dx) - vP[-1]**2/(2*Dp[-1]) - Dp[-1]/(dx**2))*P[-1]
+               local_translation(mRNA[-1], betaP[-1])
+
+
 
     return dydt
 
@@ -111,7 +114,8 @@ def GetProteindata(soln):
     p_sp_t = soln[2::3]
     return pc_t, ps_t, p_sp_t
 
-def savesimsettings(num_steps, time_steps, locations, protocol_file, dc_factors=[],ds_factors=[],vp_factors=[],alpha_factors=[],beta_factors=[],eta_factors=[],gamma_factors=[]):
+def savesimsettings(num_steps, time_steps, locations, protocol_file,
+                    dp_factors=[],vp_factors=[],kp_factors=[],betap_factors=[],jp_factors=[]):
     # assert num_steps == len(time_steps) - 1
     # assert num_steps == len(factors) - 1
     protocol_details = {}
@@ -120,14 +124,11 @@ def savesimsettings(num_steps, time_steps, locations, protocol_file, dc_factors=
     protocol_details["locations"] = locations
     # protocol_details["x_span"] = x_span
 
-    protocol_details["dc_factors"] = dc_factors
-    protocol_details["ds_factors"] = ds_factors
+    protocol_details["dp_factors"] = dp_factors
     protocol_details["vp_factors"] = vp_factors
-    protocol_details["alpha_factors"] = alpha_factors
-    protocol_details["beta_factors"] = beta_factors
-    protocol_details["alpha_factors"] = alpha_factors
-    protocol_details["eta_factors"] = eta_factors
-    protocol_details["gamma_factors"] = gamma_factors
+    protocol_details["betap_factors"] = betap_factors
+    protocol_details["kp_factors"] = kp_factors
+    protocol_details["jp_factors"] = jp_factors
 
     with open (protocol_file, 'a') as fp:
         json.dump(protocol_details,fp)

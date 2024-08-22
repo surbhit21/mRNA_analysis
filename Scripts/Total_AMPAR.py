@@ -73,7 +73,7 @@ def RunSSProtein(D_P=0.22, v_P=1.4e-3,t_half = 3.12,x_range = [0,500]):
     # r_dist = oneExponential(x_grid,fit_paramas)
     protein_ss = Protein_model(D_P, v_P, t_half, Jpin,dx,500)
     # protein_ss.sanity_check()
-    # breakpoint()
+    breakpoint()
     x_grid, p_dist = protein_ss.SolveNumericalProtein()
     param_dict = {}
     param_dict["D_P"] = protein_ss.D_P
@@ -90,7 +90,7 @@ def RunSSProtein(D_P=0.22, v_P=1.4e-3,t_half = 3.12,x_range = [0,500]):
     # plt.show()
     return x_grid[x_range[0]//dx:x_range[-1]//dx], p_dist[x_range[0]//dx:x_range[-1]//dx]
 
-# RunSSProtein()
+# RunSSProtein(0.61,1e-5)
 def RunModelWithFile(param_file):
     with open(param_file, "r") as fp:
         params = json.load(fp)

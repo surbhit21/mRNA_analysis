@@ -26,7 +26,7 @@ def getautostring(val):
 def_colo = "#2ca02c"
 def_lw = 6
 ot_lw = 3
-colors_arr = ["#4b4b4b","#969696","k","#560bad","#480ca8","#3a0ca3","#3f37c9","#4361ee","#4895ef","#4cc9f0",def_colo]
+colors_arr = ["#ADB5BD","#6C757D","#212529","#212529","#4895ef","#4cc9f0",def_colo]
 def getPerChange(y_dist):
     return 100 * (y_dist[-1]/y_dist[0] -1 )
 def ExploreParameter(V_p_list = [],
@@ -42,6 +42,7 @@ def ExploreParameter(V_p_list = [],
     plt_widget.CreateFolderRecursive(op_folder)
     fsize = plt_widget.fsize
     x_init, yi_init = Total_AMPAR.RunSSProtein(D_pinit, V_pinit)
+    # breakpoint()
     ymin = 0
     ymax = -10
     xmin,xmax = 0, 500
@@ -74,7 +75,7 @@ def ExploreParameter(V_p_list = [],
             ax.plot(x[display_range], yi[display_range] , label=r"$V_p$ {}".format(getautostring(vp)),color=colors_arr[vdx],linewidth=ot_lw)
             ax1.plot(x, yi, color=colors_arr[vdx])
             drop = getPerChange(yi[display_range])
-            print("drop = ", drop)
+            print("drop = vp for {}".format(vp), drop)
             ax.text(x=display_range[-1], y=yi[display_range[-1]],
                     s=r"{}%".format(int(drop)), color=colors_arr[vdx],fontsize=fsize)
         if max(yi/yi_init) > ymax:
@@ -95,7 +96,7 @@ def ExploreParameter(V_p_list = [],
         tics = np.arange(0, 1.2, 0.5)
         ax.plot(x_init[display_range], yi_init[display_range]/yi_init[0], label=r"$D_p$",color=colors_arr[-1],linewidth=def_lw)
         ax1.plot(x_init, yi_init / yi_init[0], color=def_colo)
-        drop = getPerChange(yi_init[display_range])
+        drop = getPerChange(yi_init)
         print("drop = ", drop)
         ax.text(x=display_range[-1], y=(yi_init/ yi_init[0])[display_range[-1]],
                 s=r"{}%".format(int(drop)), color=def_colo,fontsize=fsize)
@@ -111,8 +112,8 @@ def ExploreParameter(V_p_list = [],
                 suff = "Original"
             ax.plot(x[display_range], yi[display_range] , label=r"$D_p {}$".format(getautostring(dp)), color=colors_arr[vdx],linewidth=ot_lw)
             ax1.plot(x, yi, color=colors_arr[vdx])
-            drop = getPerChange(yi[display_range])
-            print("drop = ", drop)
+            drop = getPerChange(yi)
+            print("drop = for dp {}".format(vdx), drop)
             ax.text(x=display_range[-1], y=yi[display_range[-1]],
                     s=r"{}%".format(int(drop)),color=colors_arr[vdx],fontsize=fsize)
         handles, labels = plt.gca().get_legend_handles_labels()
@@ -145,7 +146,7 @@ def ExploreParameter(V_p_list = [],
             ax.plot(x[display_range], yi[display_range] , label=r"${:.2f}$".format(t_half), color=colors_arr[vdx],linewidth=ot_lw)
             ax1.plot(x, yi, color=colors_arr[vdx])
             drop = getPerChange(yi[display_range])
-            print("drop = ", drop)
+            print("drop = for t_half {}".format(t_half), drop)
             ax.text(x=display_range[-1], y=yi[display_range[-1]],
                     s=r"{}%".format(int(drop)), color=colors_arr[vdx],fontsize=fsize)
 
