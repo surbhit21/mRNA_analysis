@@ -65,7 +65,7 @@ def CNIH2TimeDynamics(t, y, Dp,vP,kP,betaP,Jpin,mRNA, dx):
                  local_translation(mRNA[1:-1],betaP[1:-1])
 
     dydt[-1] = (Dp[-1] / dx**2)*P[-2] - \
-               (Dp[-1]/dx**2 + vP[-1]**2/Dp - vP[-1]/dx) * P[-1] - \
+               (Dp[-1]/dx**2 + vP[-1]**2/Dp[-1] - vP[-1]/dx) * P[-1] - \
                Degradation(P[-1],kP[-1]) + \
                local_translation(mRNA[-1], betaP[-1])
 
