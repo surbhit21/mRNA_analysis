@@ -179,6 +179,7 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
     now = datetime.now()
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
     op_dir = os.getcwd() + "/../CNIH2-translation/" + date_time
+    op_protocol_file = "protocol_{}.json".format(date_time)
     os.makedirs(op_dir, exist_ok=True)
     print("date and time:", date_time)
     sim_time = 0
@@ -266,7 +267,8 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
     print("Step 1 finished at simulation time  = ", sim_time)
 
     saveoutput(op_dir, date_time, data_mat, total_tps, 100,baseline_param_file)
-
+    savesimsettings(2, time_steps, locations=location, protocol_file=os.path.join(op_dir, op_protocol_file),
+                    betap_factors=betap_factors)
 
 def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, location):
     """
@@ -279,6 +281,7 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     now = datetime.now()
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
     op_dir = os.getcwd() + "/CNIH2-translation/" + date_time
+    op_protocol_file = "protocol_{}.json".format(date_time)
     os.makedirs(op_dir, exist_ok=True)
     print("date and time:", date_time)
     sim_time = 0
@@ -364,7 +367,8 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     data_mat = np.concatenate((data_mat, soln1.y), axis=1)
     print("Step 1 finished at simulation time  = ", sim_time)
     saveoutput(op_dir, date_time, data_mat, total_tps, 100, baseline_param_file)
-
+    savesimsettings(2, time_steps, locations="FULL", protocol_file=os.path.join(op_dir, op_protocol_file),
+                    betap_factors=betap_factors)
 
 def CNIH2cLTP_soma(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, location):
     """
