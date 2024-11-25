@@ -17,7 +17,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mRNA_model_fitting import *
 import numpy as np
 from pathlib import Path
-from scipy.stats import ks_2samp, kruskal,ttest_ind,spearmanr,pearsonr
+from scipy.stats import ks_2samp, kruskal,ttest_ind,spearmanr,pearsonr,mannwhitneyu
 import seaborn as sns
 import scikit_posthocs as sp
 
@@ -26,7 +26,7 @@ import scikit_posthocs as sp
 Parent class for All plotting stuff
 """
 class SNSPlottingWidget():
-    def __init__(self,fsize=26,msize=15,tsize=25,fam='Arial',pixelden = 100,lw=3.0,width=8,height=6):
+    def __init__(self,fsize=30,msize=15,tsize=25,fam='Arial',pixelden = 100,lw=3.0,width=8,height=6):
         rc('font',
             family=fam,
             size=fsize)
@@ -157,7 +157,7 @@ class SNSPlottingWidget():
                     yi_fit,chi_squ,params = ExpFitWithMinimize(exp_method,xs[i],means[i],stds[i,:],0,+1,labs[i])
                     print("drop = {}, for {}".format(1-yi_fit[-1]/yi_fit[0],labs[i]))
                     # breakpoint()
-                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i]+r"-fit,$\chi^2_\nu$ = {:.2f}".format(chi_squ))
+                    ax.plot(xs[i],yi_fit,marker='None',c=color[i],label=labs[i])#+r"-fit,$\chi^2_\nu$ = {:.2f}".format(chi_squ))
                     ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
             elif fit_exp == 2:
                 j_r_factors = [1,10]
@@ -176,7 +176,7 @@ class SNSPlottingWidget():
                     # breakpoint()
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
-                            label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
+                            label=labs[i]) #+ r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
                     ax3.plot(x1,yi_fit/yi_fit[0],c=color[i])
             elif fit_exp == 3:
                 # left, bottom, width, height = [0.3, 0.75, 0.2, 0.2]
@@ -194,7 +194,7 @@ class SNSPlottingWidget():
                     # breakpoint()
                     # chi_squ = ChiSq(means[i],yi_fit,stds[i])
                     ax.plot(x1, yi_fit, marker='None', c=color[i],
-                            label=labs[i] + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
+                            label=labs[i])# + r"-fit,$\chi^2$ = {:.2f}".format(chi_squ))
                     # ax3.plot(xs[i],yi_fit/yi_fit[0],c=color[i])
 
             if in_set==1:
@@ -387,7 +387,7 @@ class SNSPlottingWidget():
         if fractions.shape[0]>2:
             p_values = sp.posthoc_dunn(fractions, p_adjust = 'bonferroni')
         else:
-            p_val = kruskal(fractions[0],fractions[1]).pvalue
+            p_val = mannwhitneyu(fractions[0],fractions[1]).pvalue
             max_ind = np.asarray(pairs).max()
             p_values = np.ones((max_ind+1,max_ind+1))*p_val
         
@@ -459,6 +459,7 @@ class SNSPlottingWidget():
         
         # breakpoint()
         ax = sns.swarmplot(data=df,palette=colors)
+
         # print(violin_parts['bodies'])
         
         

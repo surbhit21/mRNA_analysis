@@ -170,3 +170,6 @@ metadata/
 Protein/
 RNA-data/
 CNIH2-translation/
+Scripts/mRNA_Analysis.py
+Scripts/mRNA_Analysis_v2.py
+Scripts/mRNA_Analysis_v4.py

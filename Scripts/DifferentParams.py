@@ -86,7 +86,7 @@ def ExploreParameter(V_p_list = [],
         plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order],
                    fontsize=fsize,labelcolor='linecolor',markerscale=0)
         # plt.ylim([ymin, 1.2])
-        ax.set_xlim(display_range)
+        # ax.set_xlim(display_range)
         plt.gca().set_ylim(bottom=0)
         ax.set_ylabel(xlab, fontsize=fsize)
         ax.set_xlabel(ylab, fontsize=fsize)
@@ -96,7 +96,7 @@ def ExploreParameter(V_p_list = [],
         tics = np.arange(0, 1.2, 0.5)
         ax.plot(x_init[display_range], yi_init[display_range]/yi_init[0], label=r"$D_p$",color=colors_arr[-1],linewidth=def_lw)
         ax1.plot(x_init, yi_init / yi_init[0], color=def_colo)
-        drop = getPerChange(yi_init)
+        drop = getPerChange(yi_init[display_range])
         print("drop = ", drop)
         ax.text(x=display_range[-1], y=(yi_init/ yi_init[0])[display_range[-1]],
                 s=r"{}%".format(int(drop)), color=def_colo,fontsize=fsize)
@@ -112,7 +112,7 @@ def ExploreParameter(V_p_list = [],
                 suff = "Original"
             ax.plot(x[display_range], yi[display_range] , label=r"$D_p {}$".format(getautostring(dp)), color=colors_arr[vdx],linewidth=ot_lw)
             ax1.plot(x, yi, color=colors_arr[vdx])
-            drop = getPerChange(yi)
+            drop = getPerChange(yi[display_range])
             print("drop = for dp {}".format(vdx), drop)
             ax.text(x=display_range[-1], y=yi[display_range[-1]],
                     s=r"{}%".format(int(drop)),color=colors_arr[vdx],fontsize=fsize)

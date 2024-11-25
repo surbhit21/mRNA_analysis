@@ -18,7 +18,7 @@ import numpy as np
 from Utility import *
 from matplotlib.animation import FuncAnimation, PillowWriter
 
-date_time = "08_13_2024_11_48_37"
+date_time = "11_08_2024_16_13_52"
 per = "100"
 labels = ["CNIH2"]
 file_names = ["{}_{}_{}_percent.npy".format(i, date_time, per) for i in
@@ -52,7 +52,7 @@ locn = 250
 beta_span = 2
 alpha_span = 10
 fps = 25
-f_size= 18
+f_size= 30
 ss_dist, ss_model = RunModelWithFile(CNIH2_TemporalIntegration.baseline_param_file)
 L = 500.0
 dx = ss_model.dx
@@ -234,8 +234,8 @@ def Plot3DMatrixIndividual(dat,locn,off_set,inset_offset,step,stim_start,stim_en
 
     pc_evol = (pc_time_loc_data.T / pc_init_data).T
     inpc_evol = (inpc_time_loc_data.T / inpc_init_data).T
-    _min, _max = np.amin(pc_evol), np.amax(pc_evol)
-
+    _min, _max = 1, np.amax(pc_evol)
+    # print(_min,_max)
     asp = 'auto'
     # f_size = 14
     xlab_in, xlab, ylab = "Time (Mins)", "Time (Mins)", r"Distance from Soma ($\mu$m)"
@@ -244,13 +244,14 @@ def Plot3DMatrixIndividual(dat,locn,off_set,inset_offset,step,stim_start,stim_en
     im1 = ax.imshow(pc_evol, aspect=asp, cmap=c_map, origin='lower',vmin = _min, vmax = _max)
     # ticks_labs = np.linspace(locn - off_set, locn + off_set, len(y_ticks))
     # print("ax1 ticks ", ticks_labs,"original ticks ",y_ticks)
+    # breakpoint()
     y_ticks = np.arange(min_y,max_y+1,50)  # np.arange(1, 2 * off_set + 10, 50)
-    ax.set_yticks(y_ticks)
+    # ax.set_yticks(y_ticks)
     ax.set_xmargin(0)
     ax.set_ymargin(0)
     # x_ticks =  np.arange(0, f_rames[-1]/60/60  * CNIH2_TemporalIntegration.dt, 1)
     # ax.set_xticklabels(x_ticks)
-    ax.set_ylim([min_y,max_y])
+    # ax.set_ylim([min_y,max_y])
     left, bottom, width, height = [0.55, 0.55, 0.4, 0.4]
     ax1 = ax.inset_axes(bounds=[left, bottom, width, height], zorder=4)
 
@@ -279,16 +280,19 @@ def Plot3DMatrixIndividual(dat,locn,off_set,inset_offset,step,stim_start,stim_en
         ax.set_ylabel(ylab, fontsize=f_size)
         ax.set_xlabel(xlab, fontsize=f_size)
         ax1.set_xlabel(xlab_in, fontsize=f_size)
-        ax.set_title("[CNIH2]")
+        # ax.set_title("[CNIH2]")
         ax.tick_params(labelsize=f_size)
     # ax.tick_params(labelsize=12)
 
     divider1 = make_axes_locatable(ax)
     cax1 = divider1.append_axes(pos, size='5%', pad=pad)
     cbar = plt.colorbar(im1, cax=cax1, orientation=orient)
+    cbar.ax.yaxis.set_tick_params(labelsize=f_size)
     cbar.ax.yaxis.set_ticks_position('left')
-    cbar.ax.set_ylabel(r'% $\Delta$ in CNIH2 concentration',fontsize=f_size)
+    cbar.ax.set_ylabel(r'Fold $\Delta$ in concentration',fontsize=f_size)
     ax.hlines(y=20, xmin=stim_start / 60, xmax=stim_end / 60, linewidth=2, color='k')
+    ax.set_xticks(np.arange(timepoints[0]/60, (timepoints[-1] + 1)/60,60))
+    ax.set_yticks(np.arange(min_y, max_y+ 1, 50))
     # ax1.text(x=5, y=10, s="Translation \n up-regulation", color="k", fontsize=f_size)
     # breakpoint()
     # locs, labs = ax1.yticks()
@@ -296,8 +300,8 @@ def Plot3DMatrixIndividual(dat,locn,off_set,inset_offset,step,stim_start,stim_en
     # ax2 = fig.add_subplot(132)
 
     plt.tight_layout()
-    print("figured saved")
     SaveFigures("{}/Matrix_plot_{}_{}".format(op_folder,lab, date_time))
+    print("figured saved")
     plt.show()
 
 
@@ -305,6 +309,8 @@ s_start = 0
 s_end = 2*60*60
 # plotStimuLocation([int(locn/dx)],"s",s_start,s_end)
 # # Plot3DMatrixIndividual(data[labels[0]],locn,250,1,s_start,s_end,r"$P_c$","Pc","summer")
-Plot3DMatrixIndividual(data[labels[0]],locn,250,10,1,s_start,s_end,"[CNIH2]","CNIH2","RdPu",ax_label=1)
+Plot3DMatrixIndividual(data[labels[0]],150,150,10,1,s_start,s_end,"","CNIH2","RdPu",ax_label=1)
+
+# breakpoint()
 # PlotContour(data[labels[0]],locn,50,1,s_start,s_end,"[CNIH2]","CNIH2","RdPu",ax_label=1)
 # def animateflux()

@@ -1,58 +1,4 @@
-# AMPA-project
-
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.rlp.net/surwagle/ampa-project.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.rlp.net/surwagle/ampa-project/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
+# AMPA receptor mRNA figures
 
 
 # Project
@@ -93,9 +39,79 @@ pip install -r requirment.txt
 ```
 Or you can choose to install them separately
 ## Usage
+Please note that for legacy reasons, we have devided the code base into two repositories.
+Here is the link to the second repository. 
+To reproduce the figures from Wagle et. al., please do the following
+(in case you do not see the figure listed below, please check the second repository)
+For Fig 2 B and C
+```python
+python Scripts/mRNA_Analysis_v3.py -m Gria2
+```
+
+For Fig 2E
+```python
+python Scripts/CNIH2_protein_analysis.py
+```
+
+For Fig 2 F-H
+```python
+python Scripts/DifferentParams.py
+```
+
+For Fig 5 B and C
 
 ```python
-python mRNA_Analysis_v3.py -m list of mRNAs -w list of widths
+python Scripts/mRNA_Analysis_v3.py -m CNIH2
+```
+
+For Fig 5 E and F
+
+```python
+CNIH2_LTP.ipynb
+```
+
+For Fig 5 H and I
+
+```python
+Run the CNIH2_LTP.ipynb
+```
+
+For Fig S1 B-C
+```python
+python Scripts/mRNA_Analysis_v3.py -m Gria1
+```
+
+For S2
+```python
+python Scripts/DifferentParams.py
+```
+
+For Fig S3
+
+```python
+python Scripts/CNIH2_protein_analysis.py
+```
+
+Fig S10 B-D
+
+```python
+Run the CNIH_new_synthesis.ipynb
+```
+
+For Fig S10F
+
+```python
+python Scripts/CNIH2_protein_analysis.py
+```
+
+For Fig S11
+```python
+Run the CNIH_validation.ipynb
+```
+
+For Fig S12
+```python
+python Script/PlotMedianCNIH2.py
 ```
 
 ## Contributing
@@ -110,7 +126,7 @@ This work is supported by the [CRC 1080](https://www.crc1080.com) funded by DFG 
 
 
 ## Authors and acknowledgment
-We acknowledge our collaborators and members of [Tchumatchenko Lab](http://tchumatchenko.de)
+We would like to thank all our lab members for fruitful discussions and helpful feedback. This study was supported by the University of Bonn Medical Center (SW, NK, TT), University of Mainz medical center (SW, TT), the German Research Foundation via CRC1080 (SW, TT), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) & (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support by the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902HFST-P).
 
 ## License
 For open source projects, say how it is licensed.
