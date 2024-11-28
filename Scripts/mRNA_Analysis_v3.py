@@ -544,6 +544,7 @@ if __name__ == '__main__':
     stat_no = 5; #5 is puncta count
     
     # plotting varaible initializing
+    labels = {"Gria1":"Gria1","Gria2":"Gria2","CNIH2":"Cnih2","Camk2a":"Camk2a"}
     lab1 = []
     colors = []
     compartment = ["Soma","Dendrite"]
@@ -560,7 +561,7 @@ if __name__ == '__main__':
             print(mrna,fractions[width][mrna][:,:,stat_no].shape)
             data_to_show[width].append(fractions[width][mrna][:,0,stat_no])
             data_to_show[width].append(fractions[width][mrna][:,1,stat_no])
-            lab1.append(mrna)
+            lab1.append(labels[mrna])
             colors.append(mRNA_COLOR_code[mrna])
         data_to_show[width] = np.asarray(data_to_show[width])
     # breakpoint()
@@ -569,9 +570,17 @@ if __name__ == '__main__':
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join(mRNA_to_analyse))
         pw.CreateFolderRecursive(op_folder)
         # breakpoint()
-        pw.PlotCellFraction(data_to_show[width],lab1,compartment,x_lab,y_lab,colors,title,
-                            op_folder+"soma_vs_dend_fractions_{0}_{1}_{2}".format(stats_list[stat_no],width,w_or_wo_ax_label[ax_label])\
-                        ,[],save_it = save_it,set_axis_label=ax_label)
+        pw.PlotCellFraction(data_to_show[width],
+                            lab1,
+                            compartment,
+                            x_lab,
+                            y_lab,
+                            colors,
+                            title,
+                            op_folder+"soma_vs_dend_fractions_{0}_{1}_{2}".format(stats_list[stat_no],width,w_or_wo_ax_label[ax_label]),
+                            [],
+                            save_it = save_it,
+                            set_axis_label=ax_label)
 
         
 
@@ -593,7 +602,7 @@ if __name__ == '__main__':
         for mrna in dend_soma_ratio[width].keys():
             print(mrna,dend_soma_ratio[width][mrna][:,stat_no].shape)
             vp_data_to_show[width].append(dend_soma_ratio[width][mrna][:,stat_no])
-            vp_labs.append(mrna)
+            vp_labs.append(labels[mrna])
             vp_colors.append(mRNA_COLOR_code[mrna])
     
         vp_data_to_show[width] = np.asarray(vp_data_to_show[width])
@@ -635,7 +644,7 @@ if __name__ == '__main__':
 
     for width in  widths_to_analyse:
         for mrna in mRNA_to_analyse:
-            labs = [mrna,channel_3_mRNA]
+            labs = [labels[mrna],labels[channel_3_mRNA]]
             x_lab,y_lab,y_lab_norm = [r"Dendritic distance ($\mu m$)",'mRNA puncta density',"Normalized \n mRNA density"]
             title = ""#"Spatial distribution of mRNA copy-number"
             file_prefix = "Spatial_mRNA_distribution"

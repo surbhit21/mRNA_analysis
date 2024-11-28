@@ -358,7 +358,7 @@ class SNSPlottingWidget():
         # ax.spines.left.set_bounds((-0.02,1))
         num_plots = int(fractions.shape[0]/groups)
         pos = np.linspace(1,2,groups)
-        # breakpoint()
+        breakpoint()
         x_points = []
         pairs = [] 
         x_tics = []

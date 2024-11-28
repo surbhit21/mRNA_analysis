@@ -527,7 +527,7 @@ for l1 in to_analyse:
     print(binned_sum.mean(axis=0))
     fig,ax = plt.subplots(figsize=(8,6),ncols=1,nrows=1)
     ax.spines[['right', 'top']].set_visible(False)
-    ax.set_ylabel("MAP2 normalized \n CNIH2 [a.b.u]", fontsize=fsize)
+    ax.set_ylabel("MAP2 normalized \n CNIH-2 [a.b.u]", fontsize=fsize)
     ax.set_xlabel("Dendritic distance ($\mu$m) ", fontsize=fsize)
     # for i in range(binned_sum.shape[-1]):
     flyprops = {'markersize': 0.01}
