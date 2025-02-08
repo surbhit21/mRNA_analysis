@@ -58,7 +58,7 @@ For Fig 2 F-H
 python Scripts/DifferentParams.py
 ```
 
-For Fig  4, simulation data needs to be downloaded fromhttps://gin.g-node.org/surbhitw/CNIH2_simulations/src/master.
+For Fig  4, simulation data needs to be downloaded from [https://gin.g-node.org/surbhitw/CNIH2_simulations/src/master](https://gin.g-node.org/surbhitw/CNIH2_simulations).
 After that, open LoadNPlot.py file and set up the input_folder (in line 164) to where the downlaoded folder is stored.
 
 
