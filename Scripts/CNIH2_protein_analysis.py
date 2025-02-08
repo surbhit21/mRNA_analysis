@@ -360,7 +360,7 @@ def ReadData():
         ReadDataDict(os.path.join(curr_wd, "Protein_data/CNIH2_GluA2/MAP2_length_data.pickle")),
         ReadDataDict(os.path.join(curr_wd, "Protein_data/CNIH2_GluA2/soma_MAP2_data.pickle")),
         ReadDataDict(os.path.join(curr_wd, "Protein_data/CNIH2_GluA2/CNIH2_bg.pickle")),
-        ReadDataDict(os.path.join(curr_wd, "Protein_data/CNIH2_GluA2/Glua2_bg.pickle")),
+        ReadDataDict(os.path.join(curr_wd, "Protein_data/CNIH2_GluA2/Glua2_bg.pickle"))
     ]
 
 G2DA_c = CNHI2DataAnalysis("")
@@ -390,7 +390,7 @@ mean_CNIH2_density,sem_CNIH2_density,std_CNIH2_density,norm_CNIH2_c_density= G2D
 mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density,\
 mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density= G2DA_c.GetNormalizedDendriticDistribution(MAP2_length_data,MAP2_length_data)
 
-breakpoint()
+# breakpoint()
 
 # loading the total glua2 data from M. Kracht
 total_glua2_mk = {}
@@ -487,8 +487,13 @@ for l1 in to_analyse:
                showfliers=False, showcaps=False,
                whiskerprops=whiskerprops, boxprops=boxprops, medianprops = medianprops,
                widths=1,patch_artist=True)
-    yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
-    print("drop =",1-yi_fit[-1]/yi_fit[0])
+    # yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
+    yic_fit, rcseq, pcaram = ExpFitWithMinimize("Coupled_2E", x, mean_sw, std_sw, 0, +1, "Glua2")
+    # print("drop =",1-yi_fit[-1]/yi_fit[0])
+    print("drop =", 1 - yic_fit[-1] / yic_fit[0])
+    # plt.plot(x,yi_fit,label = "2E")
+    plt.plot(x, yic_fit, label="2E Coupled")
+    # breakpoint()
     # breakpoint()
     x_tics = np.arange(0,l1+1,25)
     no_labels = x_tics.shape[0]#int(np.floor(l1 / 25))
@@ -512,6 +517,7 @@ plt.legend()
 plt.tight_layout()
 plt_widget.SaveFigures(os.path.join(op_folder, "raw_glua2_density_profile_{}".format(l1)))
 plt.show()
+# breakpoint()
 
 for l1 in to_analyse:
     num_bins = np.arange(0,int(l1/scale_CNIH2_protein),int(bin_size/scale_CNIH2_protein))
@@ -584,7 +590,7 @@ for ldx,l1 in enumerate(to_analyse):
     # ax2[ldx].plot(x_range, mean_MAP2_density[l1], color=COLORS_dict["shaft_s"], label="MAP2", marker='o',
     #               markersize=7, linestyle="--", alpha=0.8)
 
-    # breakpoint()
+    breakpoint()
 
     x_lit, yi_lit = Total_AMPAR.RunSSProtein(D_P=1., v_P=1.46, x_range=[0, l1])
     ax2[ldx].plot(x_lit, yi_lit/yi_lit[0],
@@ -602,6 +608,7 @@ for ldx,l1 in enumerate(to_analyse):
     x, yi_fit, chi_squ, paras, mini, out2 = FitModelProtein(x_range, mean_Glua2_density[l1] / mean_Glua2_density[l1][0],
                                                             sem_Glua2_density[l1],
                                                             molecule="GluA2")  # curve_fit(exp_fit, x2, d2)
+    # breakpoint()
     print("chi squ = ",chi_squ)
     # breakpoint()
     print(yi_fit[0]-yi_fit[-1])
@@ -727,58 +734,59 @@ plot_velocity_impact(fitted_vals[0], fitted_vals[1],COLORS_dict["shaft_i"],
                      "Normlized_intesity_Dend_dist_GluA2_full_",prefix="Theory fit: \n",y_lim=False)
 
 
-"""
+ # """
 
-fig, ax1 = plt.subplots(figsize=(8, 30), ncols=1, nrows=len(to_analyse))
-# x_100 =  np.arange(0, 100, bin_size)
-for ldx, l1 in enumerate(to_analyse):
-    x_range = np.arange(0, l1, bin_size)
-    ax1[ldx].plot(x_range, mean_CNIH2_density[l1], color=COLORS_dict["shaft_s"],
-                      label="CNIH2", marker="o",linestyle="-",alpha=0.5)
-    # ax1[ldx].errorbar(x_range+bin_size/2,mean_Glua2_density[l1],sem_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="Glua2")
-
-    # popt, pcov = curve_fit(line_fit, x_range+bin_size/2, mean_CNIH2_density[l1])
-    popt_e, pcov_e = curve_fit(exp_fit, x_range, mean_CNIH2_density[l1])
-
-    bp = int(12 / bin_size)  # untill 10 microns
-    d1, d2 = np.split(mean_CNIH2_density[l1], [bp])
-    x1, x2 = np.split(x_range, [bp])
-    print(x1,x2)
-    sem1, sem2 = np.split(sem_CNIH2_density[l1], [bp])
-    popt_e1, pcov_e1 = curve_fit(exp_fit, x1, d1)
-    x3,yi_fit,chi_squ,paras,mini,out2 = FitModelProtein(x2,d2/d2[0],sem2)#curve_fit(exp_fit, x2, d2)
-    # print(popt_e1, popt_e2, popt_e)
-    mean_fit_e1 = exp_fit(x1, *popt_e1)
-    # mean_fit_e2 = exp_fit(x2, *popt_e2)
-    mean_fit_exp = exp_fit(x_range, *popt_e)
-    # r2 = R_seq(mean_fit,mean_CNIH2_density[l1])
-    r2_exp = ChiSq(mean_CNIH2_density[l1], mean_fit_exp, sem_CNIH2_density[l1])
-    r2_e1 = ChiSq(d1, mean_fit_e1, sem1)
-    # r2_e2 = ChiSq(d2, mean_fit_e2, sem2)
-    ax1[ldx].plot(x_range, mean_fit_exp, 'r--', label=r"exp-fit,$\chi^2 = %.2f$" % r2_exp)
-    ax1[ldx].plot(x1, mean_fit_e1, 'g-', label=r"exp1-fit,$\chi^2 = %.2f$" % r2_e1)
-    ax1[ldx].plot(x3+x2[0], d2[0]*yi_fit, 'k-', label=r"exp2-fit,$\chi^2 = %.2f$" % chi_squ)
-    # ax1[ldx].plot(x_range+bin_size/2,mean_fit_exp,'g--',label=r"line-fit,$R^2 = %.2f$" % r2)
-    # f_size = 12
-    loc = "upper right"
-    # print(pearsonr(mean_Glua2_density[l1],mean_CNIH2_density[l1]))
-    # ax3.errorbar(x_100,mean_int_density,sem_int_density,color=COLORS_dict["shaft_i"],label="Glua2")
-    ax1[ldx].set_ylabel("Normalized CNIH2 fluorescent", size=fsize)
-    ax1[ldx].set_xlabel(r"Dendritic distance in $\mu m$, N={}".format(CNIH2_length_data[l1].shape[0]), size=fsize)
-    ax1[ldx].set_title("Dendritic distribution of GFP normalized CNIH2 density", size=fsize)
-    ax1[ldx].legend(fontsize=fsize, loc=loc)
-    ax1[ldx].set_xlim([-1, l1])
-    # ax1[ldx].yaxis.tick_right()
-plt.tight_layout()
-plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_density_Dend_dist_CNIH2_exp_fitted"))
-plt.show()
+# fig, ax1 = plt.subplots(figsize=(8, 30), ncols=1, nrows=len(to_analyse))
+# ax1 = [ax1]
+# # x_100 =  np.arange(0, 100, bin_size)
+# for ldx, l1 in enumerate(to_analyse):
+#     x_range = np.arange(0, l1, bin_size)
+#     ax1[ldx].plot(x_range, mean_CNIH2_density[l1], color=COLORS_dict["shaft_s"],
+#                       label="CNIH2", marker="o",linestyle="-",alpha=0.5)
+#     # ax1[ldx].errorbar(x_range+bin_size/2,mean_Glua2_density[l1],sem_Glua2_density[l1],color=COLORS_dict["shaft_i"],label="Glua2")
+#
+#     # popt, pcov = curve_fit(line_fit, x_range+bin_size/2, mean_CNIH2_density[l1])
+#     # popt_e, pcov_e = curve_fit(exp_fit, x_range, mean_CNIH2_density[l1])
+#     #
+#     # bp = int(12 / bin_size)  # untill 10 microns
+#     # d1, d2 = np.split(mean_CNIH2_density[l1], [bp])
+#     # x1, x2 = np.split(x_range, [bp])
+#     # print(x1,x2)
+#     # sem1, sem2 = np.split(sem_CNIH2_density[l1], [bp])
+#     # popt_e1, pcov_e1 = curve_fit(exp_fit, x1, d1)
+#     # x3,yi_fit,chi_squ,paras,mini,out2 = FitModelProtein(x_range,d2/d2[0],sem2)#curve_fit(exp_fit, x2, d2)
+#     # print(popt_e1, popt_e2, popt_e)
+#     # mean_fit_e1 = exp_fit(x1, *popt_e1)
+#     # mean_fit_e2 = exp_fit(x2, *popt_e2)
+#     # mean_fit_exp = exp_fit(x_range, *popt_e)
+#     # r2 = R_seq(mean_fit,mean_CNIH2_density[l1])
+#     # r2_exp = ChiSq(mean_CNIH2_density[l1], mean_fit_exp, sem_CNIH2_density[l1])
+#     # r2_e1 = ChiSq(d1, mean_fit_e1, sem1)
+#     # r2_e2 = ChiSq(d2, mean_fit_e2, sem2)
+#     # ax1[ldx].plot(x_range, mean_fit_exp, 'r--', label=r"exp-fit,$\chi^2 = %.2f$" % r2_exp)
+#     # ax1[ldx].plot(x1, mean_fit_e1, 'g-', label=r"exp1-fit,$\chi^2 = %.2f$" % r2_e1)
+#     # ax1[ldx].plot(x3+x2[0], d2[0]*yi_fit, 'k-', label=r"exp2-fit,$\chi^2 = %.2f$" % chi_squ)
+#     # ax1[ldx].plot(x_range+bin_size/2,mean_fit_exp,'g--',label=r"line-fit,$R^2 = %.2f$" % r2)
+#     # f_size = 12
+#     loc = "upper right"
+#     # print(pearsonr(mean_Glua2_density[l1],mean_CNIH2_density[l1]))
+#     # ax3.errorbar(x_100,mean_int_density,sem_int_density,color=COLORS_dict["shaft_i"],label="Glua2")
+#     ax1[ldx].set_ylabel("Normalized CNIH2 fluorescent", size=fsize)
+#     ax1[ldx].set_xlabel(r"Dendritic distance in $\mu m$, N={}".format(CNIH2_length_data[l1].shape[0]), size=fsize)
+#     ax1[ldx].set_title("Dendritic distribution of GFP normalized CNIH2 density", size=fsize)
+#     ax1[ldx].legend(fontsize=fsize, loc=loc)
+#     ax1[ldx].set_xlim([-1, l1])
+#     # ax1[ldx].yaxis.tick_right()
+# plt.tight_layout()
+# plt_widget.SaveFigures(os.path.join(op_folder,"Normlized_density_Dend_dist_CNIH2_exp_fitted"))
+# plt.show()
 
 l1 = 100
 x_range = np.arange(0,l1,bin_size)
-cnih2_mean = mean_CNIH2[l1]
+# cnih2_mean = mean_CNIH2[l1]
 cnih2_sem = sem_CNIH2_density[l1]
 cnih2_m_den = mean_CNIH2_density[l1]
-
+breakpoint()
 plt_widget.PlotBinnedStats(np.asarray([x_range]), np.asarray([cnih2_m_den]), np.asarray([sem_CNIH2_density[l1]]),
                            np.asarray([cnih2_m_den]), ["cnih2"], x_lab, y_lab, ["Norm CNIH2 density"], ["#DDA15E"],"",
                            op_folder+"_norm__with_CNIH2_ss_mode_fit",
@@ -789,4 +797,4 @@ plt_widget.PlotBinnedStats(np.asarray([x_range]), np.asarray([cnih2_m_den]), np.
                            op_folder+"_norm__with_CNIH2_ss_mode_fit",
                                     bin_size,save_it = 0,fit_exp=1,in_set=0,set_axis_label=0,exp_method="2E")
 
-"""
+# """

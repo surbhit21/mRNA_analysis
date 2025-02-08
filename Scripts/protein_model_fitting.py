@@ -22,7 +22,7 @@ bins = np.arange(0, Lengths.max(), bin_size)
 def FitModelProtein(x, data, sigmas, pars=[],molecule="CNIH2"):
     if pars == []:
         fit_paramas = Parameters()
-        # np.random.seed(2024)
+        np.random.seed(2024)
         D_P_min = -1.
         D_P_max = 0
         D_P_init = np.random.uniform(D_P_min, D_P_max)

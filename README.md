@@ -58,6 +58,26 @@ For Fig 2 F-H
 python Scripts/DifferentParams.py
 ```
 
+For Fig  4, simulation data needs to be downloaded fromhttps://gin.g-node.org/surbhitw/CNIH2_simulations/src/master.
+After that, open LoadNPlot.py file and set up the input_folder (in line 164) to where the downlaoded folder is stored.
+
+
+For Fig 5 A
+```python
+python LoadNPlot.py -d 11_08_2024_16_13_52
+```
+
+For Fig 5 B
+```python
+python LoadNPlot.py -d 11_11_2024_11_56_23
+```
+
+For Fig 5 C 
+```python
+python LoadNPlot.py -d 11_11_2024_10_24_43
+```
+
+
 For Fig 5 B and C
 
 ```python
@@ -121,15 +141,7 @@ This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhit
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-## Support
-This work is supported by the [CRC 1080](https://www.crc1080.com) funded by DFG .
-
 
 ## Authors and acknowledgment
-We would like to thank all our lab members for fruitful discussions and helpful feedback. This study was supported by the University of Bonn Medical Center (SW, NK, TT), University of Mainz medical center (SW, TT), the German Research Foundation via CRC1080 (SW, TT), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) & (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support by the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902HFST-P).
+and helpful feedback. This study was supported by the University of Bonn Medical Center (SW, NK, TT), the University of Mainz Medical Center (SW, TT), the German Research Foundation via CRC1080 (SW, TT, MKK, AAP), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) $\&$ (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support from the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902-HFST-P). 
 
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-We are curretly still working on updating the scripts for small changes in the plots and any new analysis that might come up.

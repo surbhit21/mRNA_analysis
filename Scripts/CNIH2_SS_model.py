@@ -103,7 +103,7 @@ def RunSSProtein(D_P, v_P):
     return x_grid, p_dist/p_dist[0]
 
 #s
-RunSSProtein(1.5,0)
+# RunSSProtein(1.5,0)
 def RunModelWithFile(param_file):
     with open(param_file, "r") as fp:
         params = json.load(fp)
