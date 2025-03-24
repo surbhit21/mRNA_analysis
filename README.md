@@ -46,6 +46,7 @@ Or you can choose to install them separately
 Please note that for legacy reasons, we have divided the code base into two repositories.
 1. https://github.com/surbhit21/mRNA_analysis
 2. https://github.com/surbhit21/AMPA-dynamics
+
 To reproduce the figures, please do the following
 (in case you do not see the figure listed below, please check the second repository)
 For Fig 2 B and C
