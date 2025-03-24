@@ -43,7 +43,7 @@ pip install -r requirment.txt
 ```
 Or you can choose to install them separately
 # 3.Usage
-Please note that for legacy reasons, we have devided the code base into two repositories.
+Please note that for legacy reasons, we have divided the code base into two repositories.
 1. https://github.com/surbhit21/mRNA_analysis
 2. https://github.com/surbhit21/AMPA-dynamics
 To reproduce the figures, please do the following
