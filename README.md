@@ -61,6 +61,25 @@ For Fig 1 F-H
 python Scripts/DifferentParams.py
 ```
 
+For Fig 4 B and C
+
+```python
+python Scripts/mRNA_Analysis_v3.py -m CNIH2
+```
+
+For Fig 4 E and F
+
+```python
+CNIH2_LTP.ipynb
+```
+
+For Fig 4 H and I
+
+```python
+Run the CNIH2_LTP.ipynb
+```
+
+
 For Fig  5, simulation data needs to be downloaded from [https://gin.g-node.org/surbhitw/CNIH2_simulations/src/master](https://gin.g-node.org/surbhitw/CNIH2_simulations).
 After that, open LoadNPlot.py file and set up the input_folder (in line 164) to where the downlaoded folder is stored.
 
@@ -80,24 +99,6 @@ For Fig 5 C
 python LoadNPlot.py -d 11_11_2024_10_24_43
 ```
 
-
-For Fig 4 B and C
-
-```python
-python Scripts/mRNA_Analysis_v3.py -m CNIH2
-```
-
-For Fig 4 E and F
-
-```python
-CNIH2_LTP.ipynb
-```
-
-For Fig 4 H and I
-
-```python
-Run the CNIH2_LTP.ipynb
-```
 
 For Fig S1 B-C
 ```python
