@@ -5,10 +5,9 @@ Surbhit Wagle, Maximilian K. Kracht, Anne Bührke, Amparo Acker-Palmer, Nataliya
 doi: https://doi.org/10.1101/2025.02.08.637220
 
 # 1.System requirements 
-The requirement for running this code includes:
-Python
-pycharm. 
-The code was developed on Apple MacBook Pro M1 running Sonoma 14.5 os.
+The requirement for running this code includes: Python and jupyter notebook. The code was developed on Apple MacBook Pro M1 running Sonoma 14.5 os with a RAM of 32 GB and
+storage of 1 TB. As some of the figure requires downloading simulation data, please insure you have enough RAM and storage space.
+
 # 2.Pre-requisite
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install following packages.
@@ -43,28 +42,26 @@ pip install -r requirment.txt
 ```
 Or you can choose to install them separately
 # 3.Usage
-Please note that for legacy reasons, we have divided the code base into two repositories.
-1. https://github.com/surbhit21/mRNA_analysis
-2. https://github.com/surbhit21/AMPA-dynamics
+In order to run the code, you can download or clone this repository, typical installation time is a few minutes (depending on internet speed).
+To reproduce the figures, open the repository in terminal and do the following 
+(in case you do not see the figure listed below, please check the second repository):
 
-To reproduce the figures, please do the following
-(in case you do not see the figure listed below, please check the second repository)
-For Fig 2 B and C
+For Fig 1 B and C
 ```python
 python Scripts/mRNA_Analysis_v3.py -m Gria2
 ```
 
-For Fig 2E
+For Fig 1E
 ```python
 python Scripts/CNIH2_protein_analysis.py
 ```
 
-For Fig 2 F-H
+For Fig 1 F-H
 ```python
 python Scripts/DifferentParams.py
 ```
 
-For Fig  4, simulation data needs to be downloaded from [https://gin.g-node.org/surbhitw/CNIH2_simulations/src/master](https://gin.g-node.org/surbhitw/CNIH2_simulations).
+For Fig  5, simulation data needs to be downloaded from [https://gin.g-node.org/surbhitw/CNIH2_simulations/src/master](https://gin.g-node.org/surbhitw/CNIH2_simulations).
 After that, open LoadNPlot.py file and set up the input_folder (in line 164) to where the downlaoded folder is stored.
 
 
@@ -84,19 +81,19 @@ python LoadNPlot.py -d 11_11_2024_10_24_43
 ```
 
 
-For Fig 5 B and C
+For Fig 4 B and C
 
 ```python
 python Scripts/mRNA_Analysis_v3.py -m CNIH2
 ```
 
-For Fig 5 E and F
+For Fig 4 E and F
 
 ```python
 CNIH2_LTP.ipynb
 ```
 
-For Fig 5 H and I
+For Fig 4 H and I
 
 ```python
 Run the CNIH2_LTP.ipynb
@@ -135,10 +132,7 @@ For Fig S11
 Run the CNIH_validation.ipynb
 ```
 
-For Fig S12
-```python
-python Script/PlotMedianCNIH2.py
-```
+The run time for each file should take between 10 seconds to a few minutes (depending on your hardware configuration).
 
 # 4.Contribution
 
