@@ -1,11 +1,15 @@
-# AMPA receptor mRNA figures
 
+This is the read me for the repository containing the scripts used to analyse mRNA localization and generate figures for the paper
+"An integrative model of AMPA receptor trafficking reveals the central contribution of local translation in subtype-specific kinetics"
+Surbhit Wagle, Maximilian K. Kracht, Anne Bührke, Amparo Acker-Palmer, Nataliya Kraynyukova, Anne-Sophie Hafner,  Erin M. Schuman,  Tatjana Tchumatchenko
+doi: https://doi.org/10.1101/2025.02.08.637220
 
-# Project
-
-This project contains the scripts used to analyse mRNA localization and generate figures for the paper Wagle et al. 
-
-## Pre-requisite
+# 1.System requirements 
+The requirement for running this code includes:
+Python
+pycharm. 
+The code was developed on Apple MacBook Pro M1 running Sonoma 14.5 os.
+# 2.Pre-requisite
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install following packages.
 
@@ -38,7 +42,7 @@ To install the above-listed packages, run:
 pip install -r requirment.txt 
 ```
 Or you can choose to install them separately
-## Usage
+# 3.Usage
 Please note that for legacy reasons, we have devided the code base into two repositories.
 Here is the link to the second repository. 
 To reproduce the figures from Wagle et. al., please do the following
@@ -134,14 +138,17 @@ For Fig S12
 python Script/PlotMedianCNIH2.py
 ```
 
-## Contributing
+# 4.Contribution
 
 This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhitwagle/home)
 
-## License
+# 4.License
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
-## Authors and acknowledgment
-and helpful feedback. This study was supported by the University of Bonn Medical Center (SW, NK, TT), the University of Mainz Medical Center (SW, TT), the German Research Foundation via CRC1080 (SW, TT, MKK, AAP), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) $\&$ (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support from the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902-HFST-P). 
+# 5.Data Sources
+The data to generate figures is provided in the repository. The raw data can be provided upon reasonable request after the peer-review of the manuscript.
+
+# 6.Acknowledgment
+This study was supported by the University of Bonn Medical Center (SW, NK, TT), the University of Mainz Medical Center (SW, TT), the German Research Foundation via CRC1080 (SW, TT, MKK, AAP), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) & (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support from the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902-HFST-P). 
 
