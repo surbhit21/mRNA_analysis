@@ -44,8 +44,9 @@ pip install -r requirment.txt
 Or you can choose to install them separately
 # 3.Usage
 Please note that for legacy reasons, we have devided the code base into two repositories.
-Here is the link to the second repository. 
-To reproduce the figures from Wagle et. al., please do the following
+1. https://github.com/surbhit21/mRNA_analysis
+2. https://github.com/surbhit21/AMPA-dynamics
+To reproduce the figures, please do the following
 (in case you do not see the figure listed below, please check the second repository)
 For Fig 2 B and C
 ```python
@@ -62,7 +63,7 @@ For Fig 2 F-H
 python Scripts/DifferentParams.py
 ```
 
-For Fig  4, simulation data needs to be downloaded fromhttps://gin.g-node.org/surbhitw/CNIH2_simulations/src/master.
+For Fig  4, simulation data needs to be downloaded from [https://gin.g-node.org/surbhitw/CNIH2_simulations/src/master](https://gin.g-node.org/surbhitw/CNIH2_simulations).
 After that, open LoadNPlot.py file and set up the input_folder (in line 164) to where the downlaoded folder is stored.
 
 
@@ -146,9 +147,11 @@ This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhit
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
+
 # 5.Data Sources
 The data to generate figures is provided in the repository. The raw data can be provided upon reasonable request after the peer-review of the manuscript.
 
 # 6.Acknowledgment
 This study was supported by the University of Bonn Medical Center (SW, NK, TT), the University of Mainz Medical Center (SW, TT), the German Research Foundation via CRC1080 (SW, TT, MKK, AAP), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) & (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support from the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902-HFST-P). 
+
 
