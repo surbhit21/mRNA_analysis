@@ -67,11 +67,11 @@ class Protein_model():
 
 
 
-def RunSSProtein(D_P=0.22, v_P=1.4e-3,t_half = 3.12,x_range = [0,500]):
+def RunSSProtein(D_P=0.22, v_P=1.4e-3,t_half = 3.12,L=500,x_range = [0,500]):
     Jpin = 0.01
     dx = 1
     # r_dist = oneExponential(x_grid,fit_paramas)
-    protein_ss = Protein_model(D_P, v_P, t_half, Jpin,dx,500)
+    protein_ss = Protein_model(D_P, v_P, t_half, Jpin,dx,L)
     # protein_ss.sanity_check()
     # breakpoint()
     x_grid, p_dist = protein_ss.SolveNumericalProtein()

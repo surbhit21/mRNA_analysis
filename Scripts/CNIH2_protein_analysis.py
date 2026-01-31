@@ -392,6 +392,8 @@ mean_MAP2_density,sem_MAP2_density,std_MAP2_density,norm_MAP2_c_density= G2DA_c.
 
 # breakpoint()
 
+
+
 # loading the total glua2 data from M. Kracht
 total_glua2_mk = {}
 with open("./total_glua2_data.json") as fp:
@@ -420,7 +422,6 @@ plt_widget = SNSPlottingWidget()
 # y1 = x1
 # sns.lineplot(x1,y1,color='r',label="y=1")
 # plt.show()
-
 
 
 
@@ -487,12 +488,12 @@ for l1 in to_analyse:
                showfliers=False, showcaps=False,
                whiskerprops=whiskerprops, boxprops=boxprops, medianprops = medianprops,
                widths=1,patch_artist=True)
-    # yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
-    yic_fit, rcseq, pcaram = ExpFitWithMinimize("Coupled_2E", x, mean_sw, std_sw, 0, +1, "Glua2")
+    yi_fit,rseq,param = ExpFitWithMinimize("2E",x,mean_sw,std_sw,0,+1,"Glua2")
+    # yic_fit, rcseq, pcaram = ExpFitWithMinimize("Coupled_2E", x, mean_sw, std_sw, 0, +1, "Glua2")
     # print("drop =",1-yi_fit[-1]/yi_fit[0])
-    print("drop =", 1 - yic_fit[-1] / yic_fit[0])
+    print("drop =", 1 - yi_fit[-1] / yi_fit[0])
     # plt.plot(x,yi_fit,label = "2E")
-    plt.plot(x, yic_fit, label="2E Coupled")
+    plt.plot(x, yi_fit, label="2E Coupled")
     # breakpoint()
     # breakpoint()
     x_tics = np.arange(0,l1+1,25)
@@ -611,9 +612,11 @@ for ldx,l1 in enumerate(to_analyse):
     # breakpoint()
     print("chi squ = ",chi_squ)
     # breakpoint()
+    print("Theory fit: $D_p = {}$ $\mu m^2/s$, $v_P = {}$ $\mu m/s$".
+          format(10 ** paras['D_P'].value, 10 ** paras['v_P'].value),1-yi_fit[-1]/yi_fit[0])
     print(yi_fit[0]-yi_fit[-1])
     fitted_vals = [10 ** paras['D_P'].value,10 ** paras['v_P'].value]
-    x_lit, yi_fit = Total_AMPAR.RunSSProtein(D_P=fitted_vals[0], v_P=fitted_vals[1])
+    x_lit, yi_fit = Total_AMPAR.RunSSProtein(D_P=fitted_vals[0], v_P=fitted_vals[1],L=100)
     # breakpoint()
     left, bottom, width, height = [0.4, 0.45, 0.3, 0.3]
     tics = np.arange(0, 1.2, 0.5)
@@ -628,7 +631,7 @@ for ldx,l1 in enumerate(to_analyse):
     ax2[ldx].plot(x_lit,yi_fit/yi_fit[0],
                   color=COLORS_dict["shaft_i"],
                   linestyle="-",
-                  label=r"Theory fit: $D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.4f}$ $\mu m/s$".
+                  label=r"Theory fit: $D_p = {:.2f}$ $\mu m^2/s$, $v_P = {:.5f}$ $\mu m/s$".
                   format(10 ** paras['D_P'].value,10 ** paras['v_P'].value))
 
     # breakpoint()

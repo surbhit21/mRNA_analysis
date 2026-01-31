@@ -32,9 +32,11 @@ def getPerChange(y_dist):
 def ExploreParameter(V_p_list = [],
                      D_p_list = [],
                      t_half_list = [],
+                     l_list = [],
                      V_pinit=v_pfit,
                      D_pinit=d_pfit,
                      t_half_init = 3.12,
+                     L_init = 500,
                      Norm_by_own_origin=True,
                      display_range=[0,100]):
     op_folder = "./Figures/Protein/"
@@ -157,6 +159,7 @@ def ExploreParameter(V_p_list = [],
         # for i in range(1,len(t_half_list)+1):
         #     handles[i].set_color(colors_arr[i])
         order = [1, 2,0, 3]
+        # breakpoint()
         plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order],title="$T_{1/2}(Days)$",
                    fontsize=fsize, fancybox=True,labelcolor='linecolor',markerscale=0)
         # plt.legend(handles=leg, title="$T_{1/2}(Days)$",
@@ -167,21 +170,68 @@ def ExploreParameter(V_p_list = [],
         plt_widget.SaveFigures(os.path.join(op_folder, "Effect_t_half_Norm_by_{}".format(suff)))
         # plt.close()
         plt.show()
-
+    if not l_list == []:
+        ax.plot(x_init[display_range], yi_init[display_range] / yi_init[0], label=r"${}$".format(L_init),
+                color=colors_arr[-1], linewidth=def_lw)
+        ax1.plot(x_init, yi_init / yi_init[0], color=def_colo)
+        drop = getPerChange(yi_init[display_range])
+        print("drop = ", drop)
+        ax.text(x=display_range[-1], y=(yi_init / yi_init[0])[display_range[-1]],
+                s=r"{}%".format(int(drop)), color=def_colo)
+        ymax = 4
+        print(t_half_list)
+        for vdx, l in enumerate(l_list):
+            x, yi = Total_AMPAR.RunSSProtein(D_pinit, V_pinit, t_half_init,L=l)
+            # if max(yi / yi_init[0:yi.shape[0]]) > ymax:
+            #     ymax = max(yi / yi_init)
+            if Norm_by_own_origin:
+                yi /= yi[0]
+            else:
+                yi /= yi_init[0]
+                suff = "Original"
+            ax.plot(x[display_range], yi[display_range], label=r"${:3.0f} \mu m$".format(l), color=colors_arr[vdx],
+                    linewidth=ot_lw)
+            ax1.plot(x, yi, color=colors_arr[vdx])
+            drop = getPerChange(yi[display_range])
+            print("drop = for t_half {}".format(l), drop)
+            ax.text(x=display_range[-1], y=yi[display_range[-1]],
+                    s=r"{}%".format(int(drop)), color=colors_arr[vdx], fontsize=fsize)
+        # leg = t_half_list.insert(0,t_half_init)
+        handles, labels = plt.gca().get_legend_handles_labels()
+        # leg = ax.get_legend()
+        # handles[0].set_color(colors_arr[-1])
+        # for i in range(1,len(t_half_list)+1):
+        #     handles[i].set_color(colors_arr[i])
+        order = [1, 2, 0, 3]
+        # breakpoint()
+        plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order],title="$L(\mu m)$",
+                   fontsize=fsize, fancybox=True, labelcolor='linecolor', markerscale=0)
+        # plt.legend(handles=leg, title="$T_{1/2}(Days)$",
+        #            fontsize=fsize, fancybox=True)
+        plt.gca().set_ylim(bottom=0)
+        ax.set_ylabel(xlab, fontsize=fsize)
+        ax.set_xlabel(ylab, fontsize=fsize)
+        plt_widget.SaveFigures(os.path.join(op_folder, "Effect_L_Norm_by_{}".format(suff)))
+        # plt.close()
+        plt.show()
 
 own_norm = False
 # do not change the order here or the label order would change in legend
 dpl = [1/10,2,10]
 vpl = [1/10,1/2,3/2]
 thalfl = [0.5,1.95,4.35]
+Ls = [101,250,750]
 ExploreParameter(D_p_list = dpl,V_pinit=0,D_pinit=d_pdef,Norm_by_own_origin=own_norm)
 ExploreParameter(t_half_list =thalfl,D_pinit=d_pdef,V_pinit=0,Norm_by_own_origin=own_norm)
 ExploreParameter(V_p_list = vpl,D_pinit=d_pfit,Norm_by_own_origin=own_norm)
+ExploreParameter(V_pinit = v_pfit,D_pinit=d_pfit,l_list=Ls,Norm_by_own_origin=own_norm)
+
 # do not change the order here or the label order would change in legend
 thalfl = [0.5,1.95,4.35]
 own_norm = True
 ExploreParameter(D_p_list = dpl,V_pinit=0,D_pinit=d_pdef,Norm_by_own_origin=own_norm)
 ExploreParameter(t_half_list =thalfl,D_pinit=d_pdef,V_pinit=0,Norm_by_own_origin=own_norm)
 ExploreParameter(V_p_list = vpl,D_pinit=d_pfit,Norm_by_own_origin=own_norm)
+ExploreParameter(V_pinit = v_pfit,D_pinit=d_pfit,l_list=Ls,Norm_by_own_origin=own_norm)
 
 
