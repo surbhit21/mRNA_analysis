@@ -83,13 +83,13 @@ Download the simulation data from [CNIH2_simulations](https://gin.g-node.org/sur
 
 ```bash
 # Figure 5A
-python Scripts/LoadNPlot.py -d 11_08_2024_16_13_52
+python Scripts/LoadNPlot.py -d 04_19_2026_18_10_07
 
 # Figure 5B
-python Scripts/LoadNPlot.py -d 11_11_2024_11_56_23
+python Scripts/LoadNPlot.py -d 04_19_2026_18_57_10
 
 # Figure 5C
-python Scripts/LoadNPlot.py -d 11_11_2024_10_24_43
+python Scripts/LoadNPlot.py -d  04_19_2026_20_55_28
 ```
 
 # 4.Contribution
