@@ -144,7 +144,7 @@ if __name__ == '__main__':
         parsing argumenst on mRNA and widths to be analysed. Each length is analysed seperately. mRNAs can be analysed in combinations
     """
     parser = argparse.ArgumentParser(description='mRNA analysis.py file ')
-    parser.add_argument('-d', "--date_time", type=str, default="11_08_2024_16_13_52",
+    parser.add_argument('-d', "--date_time", type=str, default="04_16_2026_10_48_55",
                         help='name of the folder to read data from')
     parser.add_argument('-se', "--end_t", type=int, default=2*60*60,
                         help='end of the stimulation')
@@ -188,5 +188,5 @@ if __name__ == '__main__':
     on_time = 0
     off_time = 2 * 60 * 60
 
-    Plot3DMatrixIndividual(data[labels[0]], "{}/Matrix_plot_{}_{}".format(op_folder,labels[0], date_time),150, 150, 10, 1, s_start, s_end, "", "CNIH2", "RdPu", ax_label=1)
+    Plot3DMatrixIndividual(data[labels[0]], "{}/Matrix_plot_{}_{}".format(op_folder,labels[0], date_time),250, 250, 10, 1, s_start, s_end, "", "CNIH2", "RdPu", ax_label=1)
 

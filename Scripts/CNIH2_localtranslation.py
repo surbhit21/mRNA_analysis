@@ -142,7 +142,7 @@ def Singledxchange(pa,locns,factor,uod,dx):
     for l1 in locns:
         p[int(l1/dx)]  *= ((factor)**uod)
     return p
-def PlasticityExperimentGauss(x_grid,params,param_names, locns, sigmas, factors,up_or_down,step_num,op_dir,dt,dx):
+def PlasticityExperimentGauss(x_grid,params,param_names, locns, sigmas, factors,up_or_down,step_num,op_dir,dat_time,dx):
     new_pa = params.copy()
     fig,ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1)
     plt.yscale("log")
@@ -165,7 +165,7 @@ def PlasticityExperimentGauss(x_grid,params,param_names, locns, sigmas, factors,
     # plt.ylabel("Fold change")
     plt.legend(frameon=False, fontsize=18)
 
-    SaveFigures("{0}/fig_protocol_{1}_step_{2}".format(op_dir, dt, step_num), dpi=300)
+    SaveFigures("{0}/fig_protocol_{1}_step_{2}".format(op_dir, dat_time, step_num), dpi=300)
     plt.show()
     return new_pa
 def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,location):
@@ -178,7 +178,7 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
     """
     now = datetime.now()
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
-    op_dir = os.getcwd() + "/../CNIH2-translation/" + date_time
+    op_dir = os.getcwd()+ "/CNIH2-translation/CNIH2_simulations/{}".format(date_time)
     op_protocol_file = "protocol_{}.json".format(date_time)
     os.makedirs(op_dir, exist_ok=True)
     print("date and time:", date_time)
@@ -211,7 +211,7 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
     betap_factors.append(bp0)
     time_steps.append(t_step0)
     # beta_step0,alpha_Step0,gamma_step0,dc_step0, vp_step0,ds_step0 = PlasticityExperiment(beta,alpha,gamma,dc,vp,ds, lo, x_sdx, f0,a0, g0,dc0,vp0,ds0,0,op_dir,date_time)
-
+    breakpoint()
     dp_step0, vp_step0, kp_step0, betap_step0 = \
         PlasticityExperimentGauss(x_grid,
                                   [dp_arr,
@@ -221,6 +221,7 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
                               [r"$D_p$", r"$V_p$", r"$K_p$", r"$\beta_p$"], location,
                               l_scales0, [dp0,vp0,kp0,bp0], [1, 1, 1, 1 ], 0, op_dir,date_time,dx)
     model_params = [dp_step0 , vp_step0, kp_step0, betap_step0, jpin,mRNA_arr, dx]
+    breakpoint()
     t_range = [0, t_step0]
     t_eval = np.arange(0, t_step0, dt)
     soln0 = DynamicSimRun(model_params, t_range, t_eval, P_init, max_step=100 * dt, method='RK45')
@@ -264,8 +265,8 @@ def CNIH2Plasticity(dp_arr,vp_arr,kp_arr,betap_arr,mrna_arr,jpin,dx,x_grid,locat
     total_tps = np.concatenate((total_tps, (soln1.t + sim_time)))
     sim_time += t_step1
     data_mat = np.concatenate((data_mat, soln1.y), axis=1)
-    print("Step 1 finished at simulation time  = ", sim_time)
-
+    # print("Step 1 finished at simulation time  = ", sim_time)
+    print("Step 1 finished at simulation time  = ", sim_time," oouput saved in op_dir = ", op_dir)
     saveoutput(op_dir, date_time, data_mat, total_tps, 100,baseline_param_file)
     savesimsettings(2, time_steps, locations=location, protocol_file=os.path.join(op_dir, op_protocol_file),
                     betap_factors=betap_factors)
@@ -281,6 +282,7 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     now = datetime.now()
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
     op_dir = os.getcwd() + "/CNIH2-translation/" + date_time
+    print(op_dir)
     op_protocol_file = "protocol_{}.json".format(date_time)
     os.makedirs(op_dir, exist_ok=True)
     print("date and time:", date_time)
@@ -302,7 +304,7 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     dp0 = 1  # ramped up by a factor of 1
     vp0 = 1
     kp0 = 1
-    bp0 = 2e+3
+    bp0 = 1e+3
     # vp0 = 1
     # ds0 = 1
     P_init = protein_ss_dist
@@ -365,7 +367,6 @@ def CNIH2cLTP(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid, loc
     total_tps = np.concatenate((total_tps, (soln1.t + sim_time)))
     sim_time += t_step1
     data_mat = np.concatenate((data_mat, soln1.y), axis=1)
-    print("Step 1 finished at simulation time  = ", sim_time)
     saveoutput(op_dir, date_time, data_mat, total_tps, 100, baseline_param_file)
     savesimsettings(2, time_steps, locations="FULL", protocol_file=os.path.join(op_dir, op_protocol_file),
                     betap_factors=betap_factors)
@@ -378,7 +379,7 @@ def CNIH2cLTP_soma(dp_arr, vp_arr, kp_arr, betap_arr, mrna_arr, jpin, dx, x_grid
     """
     now = datetime.now()
     date_time = now.strftime("%m_%d_%Y_%H_%M_%S")
-    op_dir = os.getcwd() + "/CNIH2-translation/" + date_time
+    op_dir = os.getcwd() + "/CNIH2-translation" + date_time
     op_protocol_file = "protocol_{}.json".format(date_time)
     os.makedirs(op_dir, exist_ok=True)
     print("date and time:", date_time)
@@ -430,12 +431,12 @@ betaP_array = ss_model.beta_p * np.ones(protein_ss_dist.shape)
 mRNA_arr = ss_model.r_dist
 jpin = ss_model.JPin
 x_grid = ss_model.x_grid
-loc = [250]
+loc = [x for x in range(200,300,20)]
 loc_arr = [int(l) for l in loc]
-# x_span = 3
+x_span = 2
 # x_span_dx = int(x_span )
 # breakpoint()
-plasticity = "cLTP_local" #"cLTP_local","2p"
+plasticity = "2p" #"cLTP_local","2p"
 if plasticity == "2p":
     CNIH2Plasticity(dP_array, vP_array, kP_array,betaP_array,mRNA_arr,jpin,ss_model.dx,x_grid,loc_arr)
 elif plasticity == "cLTP_local":

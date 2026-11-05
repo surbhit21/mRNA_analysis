@@ -7,8 +7,8 @@ Created on Tue Aug  2 11:22:33 2022
 """
 import matplotlib.pyplot as plt
 from protein_model_fitting import FitModelProtein
-from Fonkeu_et_al_2019 import GetmRNADist
 import pandas as pd
+from Fonkeu_et_al_2019 import *
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib import rc
@@ -20,7 +20,7 @@ from pathlib import Path
 from scipy.stats import ks_2samp, kruskal,ttest_ind,spearmanr,pearsonr,mannwhitneyu
 import seaborn as sns
 import scikit_posthocs as sp
-
+from statannotations.Annotator import Annotator
 
 """
 Parent class for All plotting stuff
@@ -349,7 +349,7 @@ class SNSPlottingWidget():
           
         else:
             print("Not same length of xs and means",xs.shape,data1.shape)
-    def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1):
+    def PlotCellFraction(self,fractions,lab,compartment,xlab,ylab,color,title_string,file_name,molecules,groups=2,save_it = 1,set_axis_label=1,fraction_statistics=None):
         fig, ax = plt.subplots(figsize = (9,6))
         ax.spines[['right', 'top']].set_visible(False)
         # y_range = [0.0,0.2,0.4,0.6,0.8,1]
@@ -358,7 +358,8 @@ class SNSPlottingWidget():
         # ax.spines.left.set_bounds((-0.02,1))
         num_plots = int(fractions.shape[0]/groups)
         pos = np.linspace(1,2,groups)
-        breakpoint()
+        if fraction_statistics is None:
+            breakpoint()
         x_points = []
         pairs = [] 
         x_tics = []
@@ -384,7 +385,9 @@ class SNSPlottingWidget():
         # plt.plot([], c=color[0], label=compartment[0])
         # plt.plot([], c=color[1], label=compartment[1])
         plt.xticks(x_tics, lab)
-        if fractions.shape[0]>2:
+        if fraction_statistics is not None:
+            p_values = None
+        elif fractions.shape[0]>2:
             p_values = sp.posthoc_dunn(fractions, p_adjust = 'bonferroni')
         else:
             p_val = mannwhitneyu(fractions[0],fractions[1]).pvalue
@@ -396,7 +399,7 @@ class SNSPlottingWidget():
         pairs = np.array(pairs)
         # plt.legend(loc="upper right")
         y_max = 1.3
-        for idx,pair in enumerate(pairs):
+        for idx,pair in enumerate(pairs if fraction_statistics is None else []):
             txt = ''
             print(p_values[pair[0]][pair[1]],pair)
             if p_values[pair[0]][pair[1]] <= 0.05:
@@ -407,6 +410,15 @@ class SNSPlottingWidget():
                 txt += '*'
             y_max += 0.02
             self.AnnotateText(ax,x_points[idx*2],x_points[idx*2+1],y_max,0.01,txt,'k')
+
+        # Exact statistics are printed by mRNA_Analysis_v3.py; show stars here.
+        if fraction_statistics is not None:
+            for idx, result in enumerate(fraction_statistics):
+                pvalue = result['p_adjusted']
+                text = '***' if pvalue <= 0.001 else '**' if pvalue <= 0.01 else '*' if pvalue <= 0.05 else ''
+                if text:
+                    x1, x2 = result['positions']
+                    self.AnnotateText(ax, x1, x2, 1.3 + 0.15 * idx, 0.01, text, 'k')
         
         if set_axis_label == 1:
             ax.set_xlabel(xlab)
@@ -436,8 +448,16 @@ class SNSPlottingWidget():
         df = pd.DataFrame()
         for i in range(0,num_plots):
             # breakpoint()
-            violin_parts = ax.violinplot(data[i],positions=[x[i]],showextrema=False,showmeans = False,showmedians = False,points=len(data[i]))
-            
+            # violin_parts = ax.violinplot(data[i],positions=[x[i]],showextrema=False,showmeans = False,showmedians = False,points=len(data[i]))
+            values = np.asarray(data[i], dtype=float)
+            violin_parts = ax.violinplot(
+                values,
+                positions=[x[i]],
+                showextrema=False,
+                showmeans=False,
+                showmedians=False,
+                points=len(values),
+)
             
             quartile1, median, quartile3 = np.percentile(data[i], [25, 50, 75], axis=0)
             whiskers_min,whiskers_max = data[i].min(),data[i].max()
@@ -548,4 +568,155 @@ class SNSPlottingWidget():
         fig.tight_layout()
         if save_it == 1:
             self.SaveFigures(op_file)
+        plt.show()
+    def Swarmboxplotcombo(self,data,x,y,hue=[],xlab="",ylab= "",fig_size = (5,5),
+                          labs=[],title="",color_pal={},pairs=[],
+                          order=None,hue_order = None,
+                          stat_test="Kruskal",xfsize=14,yfsize = 14,
+                          fname="",save_it=1,ax_lab=0,log_y = 0,circle_size = 12):
+        fig, ax = plt.subplots(figsize=fig_size,nrows=1, ncols=1)
+        ax.tick_params(axis='both', which='major', labelsize=xfsize)
+        ax.grid(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        hue_plot_params = {
+            'data': data,
+            'x': x,
+            'y': y,
+            "order": order,
+            "hue": hue,
+            "hue_order": hue_order,
+            "palette": color_pal,
+        }
+        # breakpoint()
+        sns.swarmplot(**hue_plot_params,
+                      dodge=True,
+                      zorder=1,
+                      size = circle_size,
+                      ax=ax)
+        sns.boxplot(**hue_plot_params,
+                    showmeans=True,
+                    medianprops={'color': 'k',
+                                 'ls': '-',
+                                 'lw': 2,
+                                 "zorder": 10
+                                 },
+                    meanprops={"marker": "^",
+                               "markeredgecolor": "k",
+                               "markerfacecolor": "k",
+                               "markersize": "10",
+                               'visible': True,
+                               'ls': '--',
+                               'lw': 5,
+                               'color': 'r'},
+                    whiskerprops={'linewidth': 1,
+                                  "zorder": 10},
+                    boxprops={'facecolor': 'None',
+                              "zorder": 10},
+                    showfliers=False,
+                    showbox=True,
+                    showcaps=True,
+                    width=0.5,
+                    ax=ax)
+        print("fsize=",xfsize)
+        if not labs ==[]:
+            ax.legend(labs, fontsize=xfsize,loc="upper right", frameon=False)
+        if ax_lab == 1:
+            ax.set_xlabel(xlab,fontsize=xfsize)
+            ax.set_ylabel(ylab,fontsize=yfsize)
+            ax.set_title(title)
+        else:
+            ax.set_xlabel("",fontsize=xfsize)
+            ax.set_ylabel("",fontsize=yfsize)
+            ax.set_title("")
+        # bp.legend.remove()
+        # add_median_labels(ax)
+        if log_y == 1:
+            plt.yscale('log')
+        if not (stat_test == None):
+            pairs = pairs  # ,("TTX","control"),("control","Untreated")]
+            annotator = Annotator(ax, pairs, **hue_plot_params)
+            annotator.configure(test=stat_test, fontsize=xfsize)
+            annotator.apply_and_annotate()
+        if save_it == 1:
+            self.SaveFigures(fname)
+        plt.show()
+
+    def SwarmboxLineplotcombo(self,data,x,y,hue=[],xlab="",ylab= "",
+                          labs=[],title="",color_pal={},pairs=[],
+                              order=[],hue_order = [],x_pos=[],line_y_data = [],y_lims=None,
+                          stat_test="Kruskal",xfsize=14,yfsize = 14,fname="",save_it=1,ax_lab=0,log_y = 0):
+        fig, ax = plt.subplots(figsize=(8,6),nrows=1, ncols=1)
+        ax.tick_params(axis='both', which='major', labelsize=xfsize)
+        ax.grid(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        hue_plot_params = {
+            'data': data,
+            'x': x,
+            'y': y,
+            # "order": order,
+            # "hue": hue,
+            # "hue_order": hue_order,
+            "palette": color_pal,
+        }
+        sns.swarmplot(**hue_plot_params,
+                      dodge=True,
+                      zorder=1,
+                      size = 12,
+                      ax=ax)
+        sns.boxplot(**hue_plot_params,
+                    showmeans=True,
+                    medianprops={'color': 'k',
+                                 'ls': '-',
+                                 'lw': 2,
+                                 "zorder": 10
+                                 },
+                    meanprops={"marker": "^",
+                               "markeredgecolor": "k",
+                                "markerfacecolor": "k",
+                                "markersize": "10",
+                               'visible': True,
+                               'ls': '--',
+                               'lw': 5,
+                               'color':'r'},
+                    whiskerprops={'linewidth': 0.5,
+                                  "zorder": 10},
+                    boxprops={'facecolor': 'None',
+                              "zorder": 10},
+                    showfliers=False,
+                    showbox=True,
+                    showcaps=True,
+                    width=0.5,
+                    ax=ax)
+        print("fsize=",xfsize)
+        # x_pos = np.array(x_pos)
+        # y_pos = np.array(line_y_data)
+        alpha = 0.1
+        for y_p in line_y_data:
+            sns.lineplot(x_pos,y_p, color='k', alpha=alpha,linewidth = 1)
+        if not labs ==[]:
+            ax.legend(labs, fontsize=xfsize,loc="upper right", frameon=False)
+        if ax_lab == 1:
+            ax.set_xlabel(xlab,fontsize=xfsize)
+            ax.set_ylabel(ylab,fontsize=yfsize)
+            ax.set_title(title)
+        else:
+            ax.set_xlabel("",fontsize=xfsize)
+            ax.set_ylabel("",fontsize=yfsize)
+            ax.set_title("")
+        # bp.legend.remove()
+        # add_median_labels(ax)
+        print(pairs)
+        plt.yscale('log')
+        if not (stat_test == None):
+            pairs = pairs  # ,("TTX","control"),("control","Untreated")]
+            annotator = Annotator(ax, pairs, **hue_plot_params)
+            annotator.configure(test=stat_test, fontsize=xfsize)
+            annotator.apply_and_annotate()
+        if y_lims:
+            ax.set_ylim(y_lims)
+        if save_it == 1:
+            self.SaveFigures(fname)
+            
         plt.show()

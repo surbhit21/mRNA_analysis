@@ -2,7 +2,7 @@ import json
 import matplotlib
 import numpy as np
 
-matplotlib.use("Qt5Agg")
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from mRNA_SS_model import *
 from scipy.integrate import solve_bvp
@@ -93,21 +93,23 @@ def RunSSProtein(D_P, v_P):
     param_dict["JPin"] = protein_ss.JPin
     param_dict["r_dist"] = protein_ss.r_dist.tolist()
     param_dict["beta_p"] = protein_ss.beta_p
+    # breakpoint()
     with open("./CNIH2SSModelParamsTemporal.json", "w") as fp:
         json.dump(param_dict, fp)
     fp.close()
-    # plt.plot(protein_ss.x_grid, r_dist,label="mRNA")
-    # plt.plot(protein_ss.x_grid,p_dist/p_dist[0],label="Protein")
-    # plt.legend()
-    # plt.show()
+    plt.plot(protein_ss.x_grid, r_dist,label="mRNA")
+    plt.plot(protein_ss.x_grid,p_dist/p_dist[0],label="Protein")
+    plt.legend()
+    plt.show()
     return x_grid, p_dist/p_dist[0]
 
 #s
-# RunSSProtein(1.5,0)
+RunSSProtein(.05,0)
 def RunModelWithFile(param_file):
     with open(param_file, "r") as fp:
         params = json.load(fp)
     fp.close()
+    breakpoint()
     CNIH2_model1 = Protein_model(**params);
     CNIH2_model1.r_dist= np.asarray(CNIH2_model1.r_dist)
     # CNIH2_model1.x_grid = np.asarray(CNIH2_model1.x_grid)

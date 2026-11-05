@@ -38,102 +38,59 @@ uncertainties==3.1.7
 ```
 To install the above-listed packages, run: 
 ```bash
-pip install -r requirment.txt 
+pip install -r requirement.txt 
 ```
 Or you can choose to install them separately
 # 3.Usage
-In order to run the code, you can download or clone this repository, typical installation time is a few minutes (depending on internet speed).
-To reproduce the figures, open the repository in terminal and do the following 
-(in case you do not see the figure listed below, please check the second repository):
 
-For Fig 1 B and C
-```python
-python Scripts/mRNA_Analysis_v3.py -m Gria2
+Download or clone this repository and install the dependencies. The table below identifies the analysis entry points for the figure panels. Plotting source data are provided in `Figure_data`; rerunning the original analyses additionally requires the corresponding raw or intermediate input files which are not necessarily included in the repository (see Data Sources).
+
+Run Python commands from the repository root. For notebooks, start Jupyter in `Scripts` so that relative paths such as `./Protein_data` resolve correctly:
+
+```bash
+cd Scripts
+jupyter notebook
 ```
 
-For Fig 1E
-```python
-python Scripts/CNIH2_protein_analysis.py
+Open the relevant notebook and run its cells in order with the required inputs available.
+
+| Figure panels | Analysis script or notebook | Analysis |
+| --- | --- | --- |
+| 1B–C | `python Scripts/mRNA_Analysis_v3.py -m Gria2` | Somatic/dendritic fractions and dendritic distribution of *Gria2* versus *Camk2a* mRNA |
+| 1E | `python Scripts/CNIH2_protein_analysis.py` | MAP2-normalized total GluA2 distribution |
+| 1F–H | `python Scripts/DifferentParams.py` | Model parameter comparisons |
+| 2B–C | `python Scripts/HaloGluA2_analysis.py` | Surface/intracellular GluA2 ratios for the two labeling schemes |
+| 2F | `python Scripts/SE_HaloTag.py` | Spine-to-shaft GluA2 enrichment |
+| 4B–C | `python Scripts/mRNA_Analysis_v3.py -m CNIH2` | Somatic/dendritic fractions and dendritic distribution of *Cnih2* versus *Camk2a* mRNA |
+| 4E–F | `Scripts/CNIH2_LTP.ipynb` | Nascent CNIH2 in basal and cLTP conditions, in soma and dendrites |
+| 4H–I | `Scripts/CNIH2_GluA2.ipynb` | Nascent surface GluA1 and GluA2 under control and *Cnih2*-targeting shRNA |
+| S1B–C | `python Scripts/mRNA_Analysis_v3.py -m Gria1` | Somatic/dendritic fractions and dendritic distribution of *Gria1* versus *Camk2a* mRNA |
+| S2 | `python Scripts/DifferentParams.py` | Model parameter comparisons |
+| S3 | `python Scripts/CNIH2_protein_analysis.py` | CNIH2/GluA2 protein analysis |
+| S4A–B | `python Scripts/HaloGluA2_analysis.py` | Normalized surface and intracellular GluA2 fluorescence profiles, 100 µm selection |
+| S5A–H | `python Scripts/HaloGluA2_analysis.py` | Binned surface/intracellular ratios for 75, 100, 125 and 150 µm selections, respectively |
+| S6C | `python Scripts/Spine_Enrichment_comparison.py` | Antibody versus HaloTag surface GluA2 synaptic enrichment |
+| S10B–D | `Scripts/CNIH2_new_synthesis.ipynb` | Nascent CNIH2 in Met versus AHA conditions and AHA soma/dendrite fractions |
+| S10F | `python Scripts/CNIH2_protein_analysis.py` | MAP2-normalized CNIH2 distribution |
+| S11 | `Scripts/CNIH2_validation.ipynb` | Validation of *Cnih2* knockdown |
+| S12B | `Scripts/CNIH2_GluA2_cLTP.ipynb` | Control shRNA, *Cnih2*-targeting shRNA and *Cnih2*-targeting shRNA with cLTP |
+| S15B–C | `python Scripts/SE_HaloTag.py` | Spine density before and after filtering, per cell and per dendrite |
+
+
+## Figure 5 simulation plots
+
+Download the simulation data from [CNIH2_simulations](https://gin.g-node.org/surbhitw/CNIH2_simulations). Set `input_folder` in `Scripts/LoadNPlot.py` to the downloaded data location. The dataset identifiers previously used for the three panels are:
+
+```bash
+# Figure 5A
+python Scripts/LoadNPlot.py -d 11_08_2024_16_13_52
+
+# Figure 5B
+python Scripts/LoadNPlot.py -d 11_11_2024_11_56_23
+
+# Figure 5C
+python Scripts/LoadNPlot.py -d 11_11_2024_10_24_43
 ```
-
-For Fig 1 F-H
-```python
-python Scripts/DifferentParams.py
-```
-
-For Fig 4 B and C
-
-```python
-python Scripts/mRNA_Analysis_v3.py -m CNIH2
-```
-
-For Fig 4 E and F
-
-```python
-CNIH2_LTP.ipynb
-```
-
-For Fig 4 H and I
-
-```python
-Run the CNIH2_LTP.ipynb
-```
-
-
-For Fig  5, simulation data needs to be downloaded from [https://gin.g-node.org/surbhitw/CNIH2_simulations/src/master](https://gin.g-node.org/surbhitw/CNIH2_simulations).
-After that, open LoadNPlot.py file and set up the input_folder (in line 164) to where the downlaoded folder is stored.
-
-
-For Fig 5 A
-```python
-python LoadNPlot.py -d 11_08_2024_16_13_52
-```
-
-For Fig 5 B
-```python
-python LoadNPlot.py -d 11_11_2024_11_56_23
-```
-
-For Fig 5 C 
-```python
-python LoadNPlot.py -d 11_11_2024_10_24_43
-```
-
-
-For Fig S1 B-C
-```python
-python Scripts/mRNA_Analysis_v3.py -m Gria1
-```
-
-For S2
-```python
-python Scripts/DifferentParams.py
-```
-
-For Fig S3
-
-```python
-python Scripts/CNIH2_protein_analysis.py
-```
-
-Fig S10 B-D
-
-```python
-Run the CNIH_new_synthesis.ipynb
-```
-
-For Fig S10F
-
-```python
-python Scripts/CNIH2_protein_analysis.py
-```
-
-For Fig S11
-```python
-Run the CNIH_validation.ipynb
-```
-
-The run time for each file should take between 10 seconds to a few minutes (depending on your hardware configuration).
 
 # 4.Contribution
 
@@ -145,9 +102,9 @@ This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhit
 
 
 # 5.Data Sources
-The data to generate figures is provided in the repository. The raw data can be provided upon reasonable request after the peer-review of the manuscript.
+All data used for plotting are provided in the `Figure_data` folder. Raw data required to rerun some of the analyses can be made available upon reasonable request.
 
 # 6.Acknowledgment
-This study was supported by the University of Bonn Medical Center (SW, NK, TT), the University of Mainz Medical Center (SW, TT), the German Research Foundation via CRC1080 (SW, TT, MKK, AAP), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) & (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support from the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902-HFST-P). 
+We would like to thank all Tchumathenko, Hafner, Acker-Palmer, Schuman and Choquet lab members for fruitful discussions and helpful feedback.
 
-
+This study was supported by the University of Bonn Medical Center (SW, CB, NK, TT), the University of Mainz Medical Center (SW, TT), the German Research Foundation via CRC1080 (SW, MKK, AAP, EMS, TT), CRC1507 (AAP), the Donders Institute for Brain, Cognition and Behaviour and Faculty of Science, Radboud University Nijmegen Netherlands (AH). This project has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (‘MolDynForSyn’, grant agreement No. 945700) (TT) & (‘MemCode’, grant agreement No. 101076961) (AH). AH also received support from the EMBO long-term postdoctoral fellowship (ALTF 1095-2015) and the Alexander von Humboldt Foundation (FRA-1184902-HFST-P).

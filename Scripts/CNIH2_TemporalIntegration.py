@@ -12,6 +12,7 @@ dt = 1e-2
 baseline_param_file = "./CNIH2SSModelParamsTemporal.json"
 protein_ss_dist, ss_model = RunModelWithFile(baseline_param_file)
 
+
 def Phi(t,t0):
     if t >= t0:
         return 1
@@ -105,6 +106,7 @@ def saveoutput(op_dir, date_time, soln, tps, percent, orig_params_file):
     with open('{0}/timepoints_{1}_{2}_percent.npy'.format(op_dir, date_time, percent), 'wb') as f:
         np.save(f, t_points)
     f.close()
+    breakpoint()
     shutil.copyfile(orig_params_file, '{0}/baseline_parameters_{1}.json'.format(op_dir, date_time))
 
 

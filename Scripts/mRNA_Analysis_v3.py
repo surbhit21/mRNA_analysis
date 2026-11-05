@@ -15,6 +15,8 @@ import pickle
 from pathlib import Path
 from SNSPlottingWidget import SNSPlottingWidget
 from Utility import *
+from scipy.stats import wilcoxon
+from statsmodels.stats.multitest import multipletests
 # from scipy import stats
 
 # The type of mRNA to analyse, possbile choices: "Gria1", "Gria2", "CNIH2", "All"
@@ -63,147 +65,215 @@ Analysis_dend_width = 0
 # Function used to create the mRNA data dictionary by reading individual files outputed from Puncta detection using SpyDen V1.
 # not required anymore, directly read the files from pickle files
 
-# def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,channel_3_mRNA,lengths):
-#      soma_data,dend_data,dend_data_meta,soma_data_meta = {},{},{},{}
-#      soma_total_count ,soma_cell_count ,soma_unit_count, soma_total_stat, soma_cell_stat, soma_unit_stat = {},{},{},{},{},{}
-#      dend_total_count ,dend_cell_count ,dend_unit_count, dend_total_stat, dend_cell_stat, dend_unit_stat = {},{},{},{},{},{}
-#
-#      count1 = 0
-#      # MAP2_mean = {}
-#      # MAP2_std = {}
-#      # MAP2_sem = {}
-#      MAP2_Sum_norm = {}
-#      for width in widths_to_analyse:
-#          #  intializing dictionaries to store processed data length wise
-#         soma_data[width],dend_data[width],dend_data_meta[width],soma_data_meta[width] = {},{},{},{}
-#         soma_total_count[width] ,soma_cell_count[width] ,soma_unit_count[width], soma_total_stat[width], \
-#             soma_cell_stat[width], soma_unit_stat[width] = {},{},{},{},{},{}
-#         dend_total_count[width] ,dend_cell_count[width] ,dend_unit_count[width], dend_total_stat[width]\
-#             , dend_cell_stat[width], dend_unit_stat[width] = {},{},{},{},{},{}
-#
-#
-#
-#         channel_3_count = 1
-#         dend_data[width][channel_3_mRNA] = {}
-#         soma_data[width][channel_3_mRNA] = {}
-#
-#         dend_data_meta[width][channel_3_mRNA] = {}
-#         soma_data_meta[width][channel_3_mRNA] = {}
-#         # MAP2_mean[width] = []
-#         # MAP2_std[width] = []
-#         # MAP2_sem[width] = []
-#         MAP2_Sum_norm[width] = {}
-#         for mRNA in mRNA_to_analyse:
-#             print("call MAP2 analysis")
-#             mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA,lengths)
-#              #  intializing dictionaries to store processed data length wise
-#             soma_data[width][mRNA],dend_data[width][mRNA],dend_data_meta[width][mRNA],soma_data_meta[width][mRNA] = {},{},{},{}
-#             soma_total_count[width][mRNA] ,soma_cell_count[width][mRNA] ,soma_unit_count[width][mRNA], soma_total_stat[width][mRNA], \
-#                 soma_cell_stat[width][mRNA], soma_unit_stat[width][mRNA] = {},{},{},{},{},{}
-#             dend_total_count[width][mRNA] ,dend_cell_count[width][mRNA] ,dend_unit_count[width][mRNA], dend_total_stat[width][mRNA]\
-#                 , dend_cell_stat[width][mRNA], dend_unit_stat[width][mRNA] = {},{},{},{},{},{}
-#
-#             cell_num = num_cells[mRNA]
-#             cells_to_exclude = Excluded_cells[mRNA]
-#             cells = range(1,cell_num)
-#             total_d_count = 0;
-#             #root folder, will be changed later if mRNA type is set to all
-#
-#             folder = os.path.abspath(os.getcwd())+"/../{}/cells/".format(mRNA)
-#             Channel_names = {0:"Dapi",1:mRNA,2:"MAP2",3:"CAMKII"}
-#             # for i in channels:
-#
-#             soma_data[width][mRNA] = {}
-#             dend_data[width][mRNA] = {}
-#
-#             # MAP2_mean[width] = {}
-#             # MAP2_std[width] = {}
-#             # MAP2_sem[width] = {}
-#             # MAP2_Sum_norm[width] = {}
-#
-#             for lx in lengths:
-#                 Sum_norm_map2_folder = os.path.abspath(os.getcwd())+"/../{0}/MAP2-Figures/{1}/Sum_norm_MAP2_{1}_{2}.npy".format(mRNA,int(float(width)),lx)#folder+"../MAP2-Figures/{0}/Sum_norm_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
-#
-#                 if not lx in  MAP2_Sum_norm[width].keys():
-#                     MAP2_Sum_norm[width][lx] = np.load(Sum_norm_map2_folder)
-#                 else:
-#                     # breakpoint()
-#                     try:
-#                         MAP2_Sum_norm[width][lx] = np.concatenate((MAP2_Sum_norm[width][lx],np.load(Sum_norm_map2_folder)),axis=0)
-#                     except:
-#                         print("error in concatinating ",mRNA)
-#                 # std_map2_folder = folder+"../MAP2-Figures/{0}/std_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
-#                 # MAP2_mean[width][mRNA][lx] = np.load(mean_map2_folder)
-#                 # MAP2_std[width][mRNA][lx] = np.load(std_map2_folder)
-#                 # MAP2_sem[width][mRNA][lx] = MAP2_std[width][mRNA][lx]/cell_num
-#             # breakpoint()
-#             for cell in cells:
-#                 if cell not in cells_to_exclude:
-#                     # print(cell)
-#                      file =  folder+"cell_{0}/{1}/{2}/dend_puncta_channel{1}_{2}.json".format(cell,1,width)
-#                      file2 = folder+"cell_{0}/{1}/{2}/dend_puncta_channel{1}_{2}.json".format(cell,2,width)
-#                      file3 = folder+"cell_{0}/{1}/{2}/dend_puncta_channel{1}_{2}.json".format(cell,3,width)
-#                      # print(file)
-#                      # breakpoint()
-#                      if Path(file).is_file():
-#                         # print("file exists")
-#                         dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_{0}/".format(cell),scales_mRNA[mRNA][0])
-#                         total_d_count += len(dend_data_meta[width][mRNA][cell].keys())
-#                         f_d = open(file)
-#                         dend_data[width][mRNA][cell] = json.load(f_d)
-#                         f_d.close()
-#                         f_s = open(folder+"cell_{0}/{1}/{2}/soma_puncta_channel{1}_{2}.json".format(cell,1,width))
-#                         # print(f_d,f_s)
-#                         soma_data[width][mRNA][cell] = json.load(f_s)
-#                         f_s.close()
-#
-#                         dend_data_meta[width][channel_3_mRNA][channel_3_count],soma_data_meta[width][channel_3_mRNA][channel_3_count] = LoadDend(folder+"cell_{0}/".format(cell),scales_mRNA[mRNA][0])
-#                         f_d = open(file3)
-#                         dend_data[width][channel_3_mRNA][channel_3_count] = json.load(f_d)
-#                         f_d.close()
-#                         f_s = open(folder+"cell_{0}/{1}/{2}/soma_puncta_channel{1}_{2}.json".format(cell,3,width))
-#                         # print(f_d,f_s)
-#                         soma_data[width][channel_3_mRNA][channel_3_count] = json.load(f_s)
-#                         f_s.close()
-#                         channel_3_count += 1
-#                      if Path(file2).is_file():
-#                         dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_"+str(cell)+"/",scales_mRNA[mRNA][1])
-#                         total_d_count += len(dend_data_meta[width][mRNA][cell].keys())
-#                         f_d = open(file2)
-#                         dend_data[width][mRNA][cell] = json.load(f_d)
-#                         f_d.close()
-#                         f_s = open(folder+"cell_{0}/{1}/{2}/soma_puncta_channel{1}_{2}.json".format(cell,2,width))
-#                         # print(f_d,f_s)
-#                         soma_data[width][mRNA][cell] = json.load(f_s)
-#                         f_s.close()
-#             #  storing dictionaries with  processed data cell, unit wise in binned format
-#
-#             soma_total_count[width][mRNA] ,soma_cell_count[width][mRNA] ,soma_unit_count[width][mRNA], soma_total_stat[width][mRNA], \
-#                 soma_cell_stat[width][mRNA], soma_unit_stat[width][mRNA] = GetPunctaDicts(soma_data[width][mRNA],bins=soma_bins)
-#             dend_total_count[width][mRNA] ,dend_cell_count[width][mRNA] ,dend_unit_count[width][mRNA], dend_total_stat[width][mRNA], \
-#                 dend_cell_stat[width][mRNA], dend_unit_stat[width][mRNA] = GetPunctaDicts(dend_data[width][mRNA],bins=dend_bins)
-#         soma_total_count[width][channel_3_mRNA] ,soma_cell_count[width][channel_3_mRNA] ,soma_unit_count[width][channel_3_mRNA], soma_total_stat[width][channel_3_mRNA], \
-#                 soma_cell_stat[width][channel_3_mRNA], soma_unit_stat[width][channel_3_mRNA] = GetPunctaDicts(soma_data[width][channel_3_mRNA],bins=soma_bins)
-#         dend_total_count[width][channel_3_mRNA] ,dend_cell_count[width][channel_3_mRNA] ,dend_unit_count[width][channel_3_mRNA], dend_total_stat[width][channel_3_mRNA], \
-#                 dend_cell_stat[width][channel_3_mRNA], dend_unit_stat[width][channel_3_mRNA] = GetPunctaDicts(dend_data[width][channel_3_mRNA],bins=dend_bins)
-#      c_ls = GetLengthCounts(dend_data_meta)
-#
-#      MAP2_mean = {}
-#      MAP2_std = {}
-#      MAP2_sem = {}
-#      for width in widths_to_analyse:
-#          MAP2_mean[width] = {}
-#          MAP2_std[width] = {}
-#          MAP2_sem[width] = {}
-#          for lx in lengths:
-#               MAP2_mean[width][lx] = MAP2_Sum_norm[width][lx].mean(axis=0)
-#               MAP2_std[width][lx] = MAP2_Sum_norm[width][lx].std(axis=0)
-#               MAP2_sem[width][lx] = MAP2_std[width][lx]/MAP2_Sum_norm[width][lx].shape[0]
-#      # breakpoint()
-#      return soma_data,dend_data,dend_data_meta,\
-#          soma_total_count ,soma_cell_count ,soma_unit_count, soma_total_stat, soma_cell_stat, soma_unit_stat,\
-#              dend_total_count ,dend_cell_count ,dend_unit_count, dend_total_stat, dend_cell_stat, dend_unit_stat,c_ls,MAP2_mean,MAP2_std,MAP2_sem
+def ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,channel_3_mRNA,lengths):
+     soma_data,dend_data,dend_data_meta,soma_data_meta = {},{},{},{}
+     soma_total_count ,soma_cell_count ,soma_unit_count, soma_total_stat, soma_cell_stat, soma_unit_stat = {},{},{},{},{},{}
+     dend_total_count ,dend_cell_count ,dend_unit_count, dend_total_stat, dend_cell_stat, dend_unit_stat = {},{},{},{},{},{}
+
+     count1 = 0
+     # MAP2_mean = {}
+     # MAP2_std = {}
+     # MAP2_sem = {}
+     MAP2_Sum_norm = {}
+     for width in widths_to_analyse:
+         #  intializing dictionaries to store processed data length wise
+        soma_data[width],dend_data[width],dend_data_meta[width],soma_data_meta[width] = {},{},{},{}
+        soma_total_count[width] ,soma_cell_count[width] ,soma_unit_count[width], soma_total_stat[width], \
+            soma_cell_stat[width], soma_unit_stat[width] = {},{},{},{},{},{}
+        dend_total_count[width] ,dend_cell_count[width] ,dend_unit_count[width], dend_total_stat[width]\
+            , dend_cell_stat[width], dend_unit_stat[width] = {},{},{},{},{},{}
+
+
+
+        channel_3_count = 1
+        dend_data[width][channel_3_mRNA] = {}
+        soma_data[width][channel_3_mRNA] = {}
+
+        dend_data_meta[width][channel_3_mRNA] = {}
+        soma_data_meta[width][channel_3_mRNA] = {}
+        # MAP2_mean[width] = []
+        # MAP2_std[width] = []
+        # MAP2_sem[width] = []
+        MAP2_Sum_norm[width] = {}
+        for mRNA in mRNA_to_analyse:
+            print("call MAP2 analysis")
+            mp2a.plotAndSaveMap2(num_cells, Excluded_cells, dend_bins, bin_size, int(float(width)), mRNA,lengths)
+             #  intializing dictionaries to store processed data length wise
+            soma_data[width][mRNA],dend_data[width][mRNA],dend_data_meta[width][mRNA],soma_data_meta[width][mRNA] = {},{},{},{}
+            soma_total_count[width][mRNA] ,soma_cell_count[width][mRNA] ,soma_unit_count[width][mRNA], soma_total_stat[width][mRNA], \
+                soma_cell_stat[width][mRNA], soma_unit_stat[width][mRNA] = {},{},{},{},{},{}
+            dend_total_count[width][mRNA] ,dend_cell_count[width][mRNA] ,dend_unit_count[width][mRNA], dend_total_stat[width][mRNA]\
+                , dend_cell_stat[width][mRNA], dend_unit_stat[width][mRNA] = {},{},{},{},{},{}
+
+            cell_num = num_cells[mRNA]
+            cells_to_exclude = Excluded_cells[mRNA]
+            cells = range(1,cell_num)
+            total_d_count = 0;
+            #root folder, will be changed later if mRNA type is set to all
+
+            folder = os.path.abspath(os.getcwd())+"/../{}/cells/".format(mRNA)
+            Channel_names = {0:"Dapi",1:mRNA,2:"MAP2",3:"CAMKII"}
+            # for i in channels:
+
+            soma_data[width][mRNA] = {}
+            dend_data[width][mRNA] = {}
+
+            # MAP2_mean[width] = {}
+            # MAP2_std[width] = {}
+            # MAP2_sem[width] = {}
+            # MAP2_Sum_norm[width] = {}
+
+            for lx in lengths:
+                Sum_norm_map2_folder = os.path.abspath(os.getcwd())+"/../{0}/MAP2-Figures/{1}/Sum_norm_MAP2_{1}_{2}.npy".format(mRNA,int(float(width)),lx)#folder+"../MAP2-Figures/{0}/Sum_norm_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
+
+                if not lx in  MAP2_Sum_norm[width].keys():
+                    MAP2_Sum_norm[width][lx] = np.load(Sum_norm_map2_folder)
+                else:
+                    # breakpoint()
+                    try:
+                        MAP2_Sum_norm[width][lx] = np.concatenate((MAP2_Sum_norm[width][lx],np.load(Sum_norm_map2_folder)),axis=0)
+                    except:
+                        print("error in concatinating ",mRNA)
+                # std_map2_folder = folder+"../MAP2-Figures/{0}/std_MAP2_{0}_{1}.npy".format(int(float(width)),lx)
+                # MAP2_mean[width][mRNA][lx] = np.load(mean_map2_folder)
+                # MAP2_std[width][mRNA][lx] = np.load(std_map2_folder)
+                # MAP2_sem[width][mRNA][lx] = MAP2_std[width][mRNA][lx]/cell_num
+            # breakpoint()
+            for cell in cells:
+                if cell not in cells_to_exclude:
+                    # print(cell)
+                     file =  folder+"cell_{0}/{1}/{2}/dend_puncta_channel{1}_{2}.json".format(cell,1,width)
+                     file2 = folder+"cell_{0}/{1}/{2}/dend_puncta_channel{1}_{2}.json".format(cell,2,width)
+                     file3 = folder+"cell_{0}/{1}/{2}/dend_puncta_channel{1}_{2}.json".format(cell,3,width)
+                     # print(file)
+                     # breakpoint()
+                     if Path(file).is_file():
+                        # print("file exists")
+                        dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_{0}/".format(cell),scales_mRNA[mRNA][0])
+                        total_d_count += len(dend_data_meta[width][mRNA][cell].keys())
+                        f_d = open(file)
+                        dend_data[width][mRNA][cell] = json.load(f_d)
+                        f_d.close()
+                        f_s = open(folder+"cell_{0}/{1}/{2}/soma_puncta_channel{1}_{2}.json".format(cell,1,width))
+                        # print(f_d,f_s)
+                        soma_data[width][mRNA][cell] = json.load(f_s)
+                        f_s.close()
+
+                        dend_data_meta[width][channel_3_mRNA][channel_3_count],soma_data_meta[width][channel_3_mRNA][channel_3_count] = LoadDend(folder+"cell_{0}/".format(cell),scales_mRNA[mRNA][0])
+                        f_d = open(file3)
+                        dend_data[width][channel_3_mRNA][channel_3_count] = json.load(f_d)
+                        f_d.close()
+                        f_s = open(folder+"cell_{0}/{1}/{2}/soma_puncta_channel{1}_{2}.json".format(cell,3,width))
+                        # print(f_d,f_s)
+                        soma_data[width][channel_3_mRNA][channel_3_count] = json.load(f_s)
+                        f_s.close()
+                        channel_3_count += 1
+                     if Path(file2).is_file():
+                        dend_data_meta[width][mRNA][cell],soma_data_meta[width][mRNA][cell] = LoadDend(folder+"cell_"+str(cell)+"/",scales_mRNA[mRNA][1])
+                        total_d_count += len(dend_data_meta[width][mRNA][cell].keys())
+                        f_d = open(file2)
+                        dend_data[width][mRNA][cell] = json.load(f_d)
+                        f_d.close()
+                        f_s = open(folder+"cell_{0}/{1}/{2}/soma_puncta_channel{1}_{2}.json".format(cell,2,width))
+                        # print(f_d,f_s)
+                        soma_data[width][mRNA][cell] = json.load(f_s)
+                        f_s.close()
+            #  storing dictionaries with  processed data cell, unit wise in binned format
+
+            soma_total_count[width][mRNA] ,soma_cell_count[width][mRNA] ,soma_unit_count[width][mRNA], soma_total_stat[width][mRNA], \
+                soma_cell_stat[width][mRNA], soma_unit_stat[width][mRNA] = GetPunctaDicts(soma_data[width][mRNA],bins=soma_bins)
+            dend_total_count[width][mRNA] ,dend_cell_count[width][mRNA] ,dend_unit_count[width][mRNA], dend_total_stat[width][mRNA], \
+                dend_cell_stat[width][mRNA], dend_unit_stat[width][mRNA] = GetPunctaDicts(dend_data[width][mRNA],bins=dend_bins)
+        soma_total_count[width][channel_3_mRNA] ,soma_cell_count[width][channel_3_mRNA] ,soma_unit_count[width][channel_3_mRNA], soma_total_stat[width][channel_3_mRNA], \
+                soma_cell_stat[width][channel_3_mRNA], soma_unit_stat[width][channel_3_mRNA] = GetPunctaDicts(soma_data[width][channel_3_mRNA],bins=soma_bins)
+        dend_total_count[width][channel_3_mRNA] ,dend_cell_count[width][channel_3_mRNA] ,dend_unit_count[width][channel_3_mRNA], dend_total_stat[width][channel_3_mRNA], \
+                dend_cell_stat[width][channel_3_mRNA], dend_unit_stat[width][channel_3_mRNA] = GetPunctaDicts(dend_data[width][channel_3_mRNA],bins=dend_bins)
+     c_ls = GetLengthCounts(dend_data_meta)
+
+     MAP2_mean = {}
+     MAP2_std = {}
+     MAP2_sem = {}
+     for width in widths_to_analyse:
+         MAP2_mean[width] = {}
+         MAP2_std[width] = {}
+         MAP2_sem[width] = {}
+         for lx in lengths:
+              MAP2_mean[width][lx] = MAP2_Sum_norm[width][lx].mean(axis=0)
+              MAP2_std[width][lx] = MAP2_Sum_norm[width][lx].std(axis=0)
+              MAP2_sem[width][lx] = MAP2_std[width][lx]/MAP2_Sum_norm[width][lx].shape[0]
+     # breakpoint()
+     return soma_data,dend_data,dend_data_meta,\
+         soma_total_count ,soma_cell_count ,soma_unit_count, soma_total_stat, soma_cell_stat, soma_unit_stat,\
+             dend_total_count ,dend_cell_count ,dend_unit_count, dend_total_stat, dend_cell_stat, dend_unit_stat,c_ls,MAP2_mean,MAP2_std,MAP2_sem
      
+def GetFractionStatistics(soma, dend, width, target, reference='Camk2a', data_root=None):
+    """Test allocation against 0.5 and compare verified shared cells.
+
+    The loader numbers reference cells sequentially when target channel-1
+    files exist. Reconstruct and verify that mapping using raw puncta counts.
+    Holm adjustment covers the two allocation tests and paired comparison.
+    """
+    if data_root is None:
+        data_root = Path(__file__).resolve().parents[1]
+    cell_folder = Path(data_root) / target / 'cells'
+    original_ids = [cell for cell in range(1, num_cells[target])
+                    if cell not in Excluded_cells[target]
+                    and (cell_folder / f'cell_{cell}/1/{width}/dend_puncta_channel1_{width}.json').is_file()]
+    if set(soma[width][reference]) != set(range(1, len(original_ids) + 1)):
+        raise ValueError('Cannot verify reference-cell mapping from raw input files')
+    for reference_id, original_id in enumerate(original_ids, 1):
+        for species, channel, stored_id in [(target, 1, original_id), (reference, 3, reference_id)]:
+            for compartment, stats in [('soma', soma), ('dend', dend)]:
+                path = cell_folder / f'cell_{original_id}/{channel}/{width}/{compartment}_puncta_channel{channel}_{width}.json'
+                with path.open() as handle:
+                    raw = json.load(handle)
+                raw_count = sum(len(puncta) for puncta in raw.values())
+                stored_count = np.asarray(stats[width][species][stored_id])[:, 5].sum()
+                if raw_count != stored_count:
+                    raise ValueError(f'Raw/stored puncta counts differ: {species}, cell {original_id}, {compartment}')
+
+    def dendritic_fraction(species, cell):
+        somatic = np.asarray(soma[width][species][cell])[0, 5]
+        dendritic = np.asarray(dend[width][species][cell]).sum(axis=0)[5]
+        total = somatic + dendritic
+        if not np.isfinite([somatic, dendritic]).all() or min(somatic, dendritic) < 0 or total <= 0:
+            raise ValueError(f'Invalid puncta counts for {species}, cell {cell}')
+        return dendritic / total
+
+    def signed_rank(differences):
+        differences = np.asarray(differences, dtype=float)
+        if not len(differences):
+            raise ValueError('No observations available for fraction test')
+        if not np.any(differences != 0):
+            return 0.0, 1.0
+        result = wilcoxon(differences, alternative='two-sided', zero_method='wilcox', correction=False)
+        return float(result.statistic), float(result.pvalue)
+
+    species_order = list(soma[width])
+    if set(species_order) != {target, reference}:
+        raise ValueError('Fraction statistics require one target mRNA and Camk2a')
+    results = []
+    for species in species_order:
+        values = [dendritic_fraction(species, cell) for cell in soma[width][species]]
+        statistic, pvalue = signed_rank(np.asarray(values) - 0.5)
+        index = species_order.index(species)
+        results.append(dict(comparison=f'{species} dendritic fraction vs 0.5',
+                            test="One-sample Wilcoxon", n=len(values), W=statistic, p_raw=pvalue,
+                            positions=[index * 3 + 1, index * 3 + 2]))
+    target_values = [dendritic_fraction(target, cell) for cell in original_ids]
+    reference_values = [dendritic_fraction(reference, cell) for cell in range(1, len(original_ids) + 1)]
+    statistic, pvalue = signed_rank(np.asarray(target_values) - np.asarray(reference_values))
+    results.append(dict(comparison=f'{target} vs {reference} dendritic fractions (paired)',
+                        test='Paired Wilcoxon', n=len(original_ids), W=statistic,
+                        p_raw=pvalue,
+                        positions=[species_order.index(target) * 3 + 2,
+                                   species_order.index(reference) * 3 + 2]))
+    adjusted = multipletests([row['p_raw'] for row in results], method='holm')[1]
+    for row, pvalue in zip(results, adjusted):
+        row['p_adjusted'] = float(pvalue)
+    return results
+
+
 def GetCellWiseRatio(soma,dend):
     
    
@@ -327,15 +397,15 @@ def GetPunctaDicts(od,bins=None):
                 binned_sum = BinnedSum(all_stats,bins,-1,"{0}_{1}_{2}".format("no channel",cell,unit)) # binning based on lenght  
             else:
                 # breakpoint()
-                binned_sum = np.zeros((bins.shape[0],GetRNAPunctaStat(np.zeros((10,1))).shape[0]))
+                binned_sum = binned_sum = np.zeros((bins.shape[0], GetRNAPunctaStat(np.zeros(10)).shape[0]))#np.zeros((bins.shape[0],GetRNAPunctaStat(np.zeros((10))).shape[0]))
             unit_stat[cell][unit] = binned_sum
             
-            if cell_stat[cell] == []:
+            if len(cell_stat[cell]) == 0:
                 cell_stat[cell] = binned_sum
             else:
                 # breakpoint()
                 cell_stat[cell] = np.add(cell_stat[cell],binned_sum)
-            if total_stat == []:
+            if len(total_stat) == 0:
                 total_stat = binned_sum
             else:
                 total_stat= np.add(total_stat,binned_sum)
@@ -523,6 +593,7 @@ if __name__ == '__main__':
          soma_total_count ,soma_cell_count ,soma_unit_count, soma_total_stat, soma_cell_stat, soma_unit_stat,\
              dend_total_count ,dend_cell_count ,dend_unit_count, dend_total_stat, dend_cell_stat, dend_unit_stat,c_ls,\
                  MAP2_mean,MAP2_std,MAP2_sem  = ReadData(mRNA_to_analyse[0])
+                #  ReadFiles(mRNA_to_analyse,widths_to_analyse,soma_bins,dend_bins,bin_size,channel_3_mRNA,lengths_to_analyse)#
 
     # DumpDict(soma_data, "./mRNA_data/{}/soma_data.pickle".format(mRNA_to_analyse[0]))
     # breakpoint()
@@ -535,7 +606,7 @@ if __name__ == '__main__':
     ax_label = 1 #plot axis labels or not (=1 for yes)
     w_or_wo_ax_label = ["", "_with_ax_label"] #for chaning the filename suffix
     #  calculating fractions for total in soma and dendrites
-    fractions, total_cell_counts = GetSomaticDendriticFraction(soma_cell_stat,dend_cell_stat)
+    fractions, total_cell_counts = GetSomaticDendriticFraction(soma_cell_stat, dend_cell_stat)
     data_to_show = {}
     # breakpoint()
     #  statistics number to use as representation of mRNA copy-number
@@ -563,13 +634,21 @@ if __name__ == '__main__':
             data_to_show[width].append(fractions[width][mrna][:,1,stat_no])
             lab1.append(labels[mrna])
             colors.append(mRNA_COLOR_code[mrna])
-        data_to_show[width] = np.asarray(data_to_show[width])
+        # data_to_show[width] = np.asarray(data_to_show[width])
+        data_to_show[width] = np.asarray(data_to_show[width], dtype=object)
     # breakpoint()
     # loop to call the plotting function
     for width in widths_to_analyse:
         op_folder = os.path.abspath(os.getcwd())+"/Figures/{}/{}/".format(width,'_'.join(mRNA_to_analyse))
         pw.CreateFolderRecursive(op_folder)
         # breakpoint()
+        if len(mRNA_to_analyse) != 1:
+            raise ValueError('Run one target mRNA at a time for fraction statistics')
+        fraction_statistics = GetFractionStatistics(
+            soma_cell_stat, dend_cell_stat, width, mRNA_to_analyse[0]
+        )
+        print('Fraction statistics: one-sample Wilcoxon vs 0.5; paired Wilcoxon between mRNAs; Holm correction across three comparisons')
+        print(pd.DataFrame(fraction_statistics).drop(columns='positions').to_string(index=False))
         pw.PlotCellFraction(data_to_show[width],
                             lab1,
                             compartment,
@@ -580,7 +659,8 @@ if __name__ == '__main__':
                             op_folder+"soma_vs_dend_fractions_{0}_{1}_{2}".format(stats_list[stat_no],width,w_or_wo_ax_label[ax_label]),
                             [],
                             save_it = save_it,
-                            set_axis_label=ax_label)
+                            set_axis_label=ax_label,
+                            fraction_statistics=fraction_statistics)
 
         
 
@@ -605,7 +685,8 @@ if __name__ == '__main__':
             vp_labs.append(labels[mrna])
             vp_colors.append(mRNA_COLOR_code[mrna])
     
-        vp_data_to_show[width] = np.asarray(vp_data_to_show[width])
+        # vp_data_to_show[width] = np.asarray(vp_data_to_show[width])
+        vp_data_to_show[width] = np.asarray(vp_data_to_show[width], dtype=object)
     
     # loop to call the plotting function
     for width in widths_to_analyse:

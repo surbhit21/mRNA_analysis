@@ -52,7 +52,7 @@ def FitModelProtein(x, data, sigmas, pars=[],molecule="CNIH2"):
 
 
 def resudual(paras, molecule, x=None, data=None):
-    print(".",end="")
+    print("*",end="")
     r_needed = GetRequiredDist(paras, x, data,molecule,off_set=1)
     resd = data - r_needed
     # breakpoint()
@@ -95,7 +95,7 @@ def GetParamAndModelDist(paras,molecule):
     if molecule == "CNIH2":
         return CNIH2_SS_model.RunSSProtein(D_P, v_P)
     elif molecule == "GluA2":
-        return Total_AMPAR.RunSSProtein(D_P,v_P,L=100)
+        return Total_AMPAR.RunSSProtein(D_P,v_P)
 
 
 def FittedCalculation(paras, x, data, sigmas, mini, out2,molecule):
