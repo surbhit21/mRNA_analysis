@@ -1,8 +1,9 @@
 
-This is the read me for the repository containing the scripts used to analyse mRNA localization and generate figures for the paper
-"An integrative model of AMPA receptor trafficking reveals the central contribution of local translation in subtype-specific kinetics"
-Surbhit Wagle, Maximilian K. Kracht, Anne Bührke, Amparo Acker-Palmer, Nataliya Kraynyukova, Anne-Sophie Hafner,  Erin M. Schuman,  Tatjana Tchumatchenko
-doi: https://doi.org/10.1101/2025.02.08.637220
+This repository contains the scripts used to analyse mRNA localization and generate figures for the preprint below.
+
+## Preprint
+
+Wagle, S., Kracht, M. K., Bührke, A., Acker-Palmer, A., Kraynyukova, N., Hafner, A.-S., Schuman, E. M., & Tchumatchenko, T. (2025). **An integrative model of AMPA receptor trafficking reveals the central contribution of local translation in subtype-specific kinetics.** *bioRxiv*. https://doi.org/10.1101/2025.02.08.637220
 
 # 1.System requirements 
 The requirement for running this code includes: Python and jupyter notebook. The code was developed on Apple MacBook Pro M1 running Sonoma 14.5 os with a RAM of 32 GB and
@@ -94,7 +95,7 @@ python Scripts/LoadNPlot.py -d  04_19_2026_20_55_28
 
 # 4.Contribution
 
-This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhitwagle/home)
+This code was developed by [Surbhit Wagle](https://sites.google.com/view/surbhitwagle/home) with input from all co-authors. 
 
 # 4.License
 
